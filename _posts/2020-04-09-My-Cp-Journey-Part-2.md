@@ -3,7 +3,7 @@ layout: post
 title: My CP Journey - Part 2
 ---
 
-[Here](http://www.sidhantbansal.com/My-Cp-Journey-Part-1/) is the first part. So I joined NUS (National University of Singapore). The competitive programming environment in NUS is competitive to say at the very least.
+[Here](https://www.sidhantbansal.com/2019/My-Cp-Journey-Part-1/) is the first part. So I joined NUS (National University of Singapore). The competitive programming environment in NUS is competitive to say at the very least.
 
 The main driving force for CP in NUS is Prof. Steven Halim, who is the head coordinator for the ICPC within NUS + Author of CP3 book + Involved in IOI as Singapore head coach. His efforts + the good reputation of NUS attracts a few medallists from different olympiads every year. This ensures a regular supply of smart and competitive students interested in ICPC.
 
