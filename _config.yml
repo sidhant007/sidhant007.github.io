@@ -7,7 +7,7 @@ url           : https://sidhantbansal.com
 baseurl       : "" # apply repo name like "/myproject" if used under gh-pages branch, else (under master branch) just leave empty/blank
 cover         : "" # image uri like logo/cover image for site seo
 
-google_analytics  : UA-120141747-1
+google_analytics  : G-WXQXYCDHBY
 twitter_username  : ""
 comments_enabled  : false # if enabled (set to true), please provide your disqus_username
 disqus_shortname  : ""
