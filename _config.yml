@@ -9,8 +9,8 @@ cover         : "" # image uri like logo/cover image for site seo
 
 google_analytics  : G-WXQXYCDHBY
 twitter_username  : ""
-comments_enabled  : false # if enabled (set to true), please provide your disqus_username
-disqus_shortname  : ""
+comments_enabled  : true # if enabled (set to true), please provide your disqus_username
+disqus_shortname  : "www-sidhantbansal-com-1"
 postshare_enabled : false
 
 # Build settings
