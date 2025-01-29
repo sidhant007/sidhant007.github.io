@@ -60,4 +60,5 @@ exclude:
   - "changelog.md"
   - "script"
   - "vendor"
+  - "jekyll-feed"
   - "thinkspace.gemspec"
