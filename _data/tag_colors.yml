@@ -1,0 +1,4 @@
+announcement: "#007BFF"    # Blue
+personal: "#28A745"     # Green
+technical: "#FFC107" # Yellow
+default: "#CCCCCC"      # Gray

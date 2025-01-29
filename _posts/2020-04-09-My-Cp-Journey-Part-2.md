@@ -1,6 +1,8 @@
 ---
 layout: post
 title: My CP Journey - Part 2
+tags:
+  - personal
 ---
 
 [Here](https://www.sidhantbansal.com/2019/My-Cp-Journey-Part-1/) is the first part. So I joined NUS (National University of Singapore). The competitive programming environment in NUS is competitive to say at the very least.

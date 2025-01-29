@@ -1,6 +1,8 @@
 ---
 layout: post
 title: To concentrate or not to concentrate
+tags:
+   - technical
 ---
 
 To use concentration bounds or **anti-concentration** bounds, that is the question?

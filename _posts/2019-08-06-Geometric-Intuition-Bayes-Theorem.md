@@ -1,6 +1,8 @@
 ---
 layout: post
 title: Geometric intuition of Bayes' Theorem
+tags:
+  - technical
 ---
 
 ## Motivation

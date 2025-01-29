@@ -1,6 +1,8 @@
 ---
 layout: post
 title: CS5330 - Randomized Algorithm Review/Summary
+tags: 
+  - technical
 ---
 
 So I took [CS5330](https://www.comp.nus.edu.sg/~gilbert/CS5330/) a randomized algorithms course this semester in NUS taught by Prof. Seth Gilbert.

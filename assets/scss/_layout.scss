@@ -27,6 +27,21 @@ body {
   *zoom: 1;
 }
 
+.footnotes {
+  font-size: 0.9rem;
+  color: gray;
+  border-top: 1px solid #ddd;
+  padding-top: 10px;
+  margin-top: 20px;
+}
+
+.footnote a, sup {
+  text-decoration: none;
+  font-size: 0.8em;
+  vertical-align: super; /* Moves footnote numbers up */
+  line-height: 0;
+}
+
 body {
   background-color: $base-background-color;
 }
@@ -134,6 +149,24 @@ hr {
   }
 }
 
+.sorting-controls {
+  margin-bottom: 20px;
+}
+
+.sort-button {
+  padding: 8px 12px;
+  margin-right: 10px;
+  background-color: #007BFF;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.sort-button:hover {
+  background-color: #0056b3;
+}
+
 .post-item {
   margin-bottom: 0.2em;
   display: block;
@@ -152,7 +185,8 @@ hr {
     //border: 1px solid lighten($light-gray-color, 10%);
     padding: 0 0.2em;
     margin-left: 1em;
-    margin-top: 2px;
+    margin-top: 0px;
+    //float: right;
     @extend .pull-right;
   }
 
@@ -161,10 +195,10 @@ hr {
 .post-meta {
   color: $medium-gray-color;
   text-transform: uppercase;
-  display: inline-block;
+  display: flex;
   letter-spacing: 1px;
-  font-size: rem(14);
-  margin-bottom: 1px;
+  font-size: rem(12);
+  margin-bottom: 0px;
 }
 
 .post-title {
@@ -181,6 +215,20 @@ hr {
 
 .post {
   @extend .clearfix;
+}
+
+.tags {
+  display: inline-flex;
+  gap: 5px; /* Spacing between multiple tags */
+}
+
+.tag {
+  display: inline-block;
+  padding: 3px 8px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: white;
+  border-radius: 5px;
 }
 
 .pagination {
