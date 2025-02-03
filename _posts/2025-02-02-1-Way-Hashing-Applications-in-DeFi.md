@@ -1,11 +1,11 @@
 ---
 layout: post
-title: 1-way Hashing - Securing your BTC
+title: 1-way Hashing - Applications in DeFi
 tags:
   - technical
 ---
 
-_Trusting hardness of problems to keep your BTC safe_
+_Trusting hardness of problems to keep your crpto safe_
 
 It’s widely known that **1-way hash functions**, particularly **SHA-256**, are the cornerstone of modern cryptography.
 
@@ -17,7 +17,7 @@ In this post, we’ll explore the usage of 1-way hash functions in DeFi (Decentr
 
 The two use-cases we will be exploring are:
  - Atomic Swaps (useful)
- - Bitcoin Puzzles (cause climate change, has front-runners, but still cool)
+ - Bitcoin Puzzles (causes climate change, has front-runners, but still cool)
 
 _Another popular use case of 1-way hash functions is Merkle Trees, since there are tons of resources online covering this, so I won't cover it._
 
@@ -30,8 +30,8 @@ Bitcoin blockchain is a ledger of unspent money. We'll simplify by considering t
 A bitcoin transaction (simplified) consists of:
  - Parent transaction ID: ID of the transaction whose money is being spent
  - Amount: Amount of BTC being transferred
- - ScriptSig: Unlocking script attached to the input
- - ScriptPK: Locking script attached to the output
+ - ScriptSig: Unlocking script attached to the parent transaction
+ - ScriptPK: Locking script attached to the current transaction
  - Mining fees: Fees paid to miners for including this transaction in the blockchain
 
 where a transaction is considered valid[^2] iff the program **ScriptSig \| ScriptPK** evaluates to true and there is no double-spend (i.e. the same parent transaction is not being spent by two transactions) [^3]
@@ -46,7 +46,7 @@ Let’s take a basic example to ramp-up:
 
  - Bob generates a random secret key (also called private key): $sk_B$
  - Bob computes his public key: $pk_B = sk_B \times G_{secp256k1}$ where $G_{secp256k1}$ is a constant under the cryptographic modulo field
- - Bob computes his wallet address as address$\_B$ = OP\_SHA256($pk_B$). In reality this is a OP\_HASH160($pk_B$) = RIPEMD160(SHA256($pk_B$)) but for the sake of simplicity we will assume that this is the same as SHA256($pk_B$)[^4]
+ - Bob computes his wallet address as address$\_B$ = SHA256($pk_B$). In reality, address$\_B$ = OP\_HASH160($pk_B$) = RIPEMD160(SHA256($pk_B$)) but for the sake of simplicity we will assume that this is SHA256($pk_B$)[^4]
  - Alice posts the transaction X on Bitcoin blockchain
    
    | Tx ID | Parent Tx ID  | Amount | ScriptSig | ScriptPK | Mining Fees |
@@ -102,9 +102,9 @@ Bitcoin Opcode is run in a stack based manner, so as we run the script, we would
 <br>Stack now: `[SIGN(sk_B, Y), pk_B, SHA256(pk_B)]`
   - Then we push **address_B** ( = SHA256($pk_B$)) onto the stack
 <br>Stack now: `[SIGN(sk_B, Y), pk_B, SHA256(pk_B), SHA256(pk_B)]`
-  - **OP_EQQUALVERIFY** checks it the top two elements of the stack are equal or not, if not returns false immediately, otherwise pops the top two elements
-<br>Stack now: `[SIGN(sk_B, Y), pk_B}]`
-  - **OP_CHECKSIG** verifies if the signature = second element of stack, using the public key = top stack element, is a valid signature for the transaction. _Formally speaking it checks if `VERIFIER(SIGN, pk_B, SHA256(Tx)) == 1?`, where `VERIFIER` is a function that checks if the signature is valid or not._
+  - **OP_EQUALVERIFY** checks it the top two elements of the stack are equal or not, if not returns false immediately, otherwise pops the top two elements
+<br>Stack now: `[SIGN(sk_B, Y), pk_B]`
+  - **OP_CHECKSIG** verifies if the signature = second element of stack, using the public key = top stack element, is a valid signature for the transaction. Formally speaking it checks if `VERIFIER(SIGN, pk_B, SHA256(Tx)) == 1?`, where `VERIFIER` is a function that checks if the signature is valid or not.
 
 This setup of ScriptSig\|ScriptPK is called [Pay-to-Public-Key-Hash (P2PKH)](https://learnmeabitcoin.com/technical/script/p2pkh/)
 
@@ -174,7 +174,7 @@ We have shown a way where two individuals who do NOT trust each other are able t
 </figure>
 <br>
 
-The **Bitcoin 66-bit puzzle** was a cryptographic challenge, where instead of a full 256-bit secret key generated randomly, the puzzle's secret key has only 66 bits of randomness. This drastically reduced the search space to $2^{66}$ - still massive, but feasible if you have the resources. After ~2 years of compute, a solver having brute-forced each of the candidate $2^66$secret keys, generating the corresponding public key and then checking if the SHA256(public key) = the wallet address uszed in the puzzle, eventually found the correct secret key. To claim the 6.6BTC (present value ~100k USD), they submitted a transaction with public key (NOT the secret key) and the corresponding signature (using the found secret key) (Recall the P2PKH setup we explained above). The transaction also had some fees attached for the miners to include it in the blockchain.
+The **Bitcoin 66-bit puzzle** was a cryptographic challenge, where instead of a full 256-bit secret key generated randomly, the puzzle's secret key has only 66 bits of randomness. This drastically reduced the search space to $2^{66}$ - still massive, but feasible if you have the resources. After ~2 years of compute, a solver having brute-forced each of the candidate $2^{66}$ secret keys, generating the corresponding public key and then checking if the SHA256(public key) = the wallet address used in the puzzle, eventually found the correct secret key. To claim the 6.6BTC (present value ~100k USD), they submitted a transaction with public key (NOT the secret key) and the corresponding signature (using the found secret key) (Recall the P2PKH setup we explained above). The transaction also had some fees attached for the miners to include it in the blockchain.
 
 Allegedly, someone had a live bot looking for the puzzle-solving unconfirmed transaction in the miner pool, which once they saw, they knew the public key, now they still had to figure out the secret key. But here comes the punchline, figuring out a low entropy[^5] secret key from the public key is actually much simpler using Pollard's rho algorithm which takes time O(sqrt(n)) where n is the size of the group, in this case $\sqrt{2^{66}} \sim 2^{33}$, which suddenly becomes crackable in minutes. This bot once having cracked this secret key, posted a similar transaction as the original solver but with a higher fee, so that it gets confirmed faster and effectively drained the 6.6BTC from the puzzle wallet to their own faster than the original solver could.
 
