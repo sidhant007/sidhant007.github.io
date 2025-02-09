@@ -37,7 +37,7 @@ _Example: Say $X$ is the outcome of a dice roll. Then $E[X] = \frac{1+2+3+4+5+6}
 
  - $U(0, 1)$ denotes a uniform distribution over the range $(0, 1)$. This means that any value in this range is equally likely to be picked.
 
-_Example: Say $Y \sim U(0, 1)$. Then $E[Y] = (0 + 1)/2 = 0.5$ and $Pr(Y \in (0.1, 0.8)) = 0.7$_
+_Example: Say $Y \sim U(0, 1)$. Then $$E[Y] = \int_{0}^{1}xdx = 0.5$$ and $$Pr(Y \in (0.1, 0.8)) = 0.7$$_
 
  - If you have two random variables $X$ and $Y$, then $E[X + Y] = E[X] + E[Y]$
   **This holds irrespective of whether $X$ and $Y$ are related to one another[^1] -- famously known as Linearity of Expectation**
@@ -180,7 +180,7 @@ Let f be: $ f(a) = \text{frac}(a\theta) = a\theta - \lfloor a\theta \rfloor, \th
 Where we sample $$\theta \sim U(0, 1) \Rightarrow \text{frac}(a\theta) \sim U(0, 1)$$
 
 <details>
-<summary>Proof Sketch of why $\theta \sim U(0, 1) \Rightarrow \text{frac}(a\theta) \sim U(0, 1)$</summary>
+<summary>Spolier of why $\theta \sim U(0, 1) \Rightarrow \text{frac}(a\theta) \sim U(0, 1)$</summary>
 Can think of $\text{frac}(a\theta) = a\theta \text{ mod } 1$. Since $\theta \sim U(0, 1)$, multiplying it by $a$ stretches the probability mass in $(0, 1)$ to the range $(0, a)$ uniformly. Since $a$ is an integer, when we take “mod 1” (i.e. the fractional part) over this, we perfectly wrap this range $(0, a)$ on $(0, 1)$ and so the mass still remains uniform over $(0, 1)$, therefore $\text{frac}(a\theta) \sim U(0, 1)$
 </details>
 <br>
