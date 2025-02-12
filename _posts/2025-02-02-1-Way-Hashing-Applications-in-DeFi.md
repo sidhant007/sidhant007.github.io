@@ -157,7 +157,7 @@ The core idea is that on an off-channel, Bob broadscasts the hash($h$) of a secr
   OP_ENDIF
   OP_CHECKSIG
   ```
-  Similar script would be created by Bob on the Ethereum blockchain. Note: Technically, Ethereum uses Solidity which is even more expressive, but the idea rmain the same.
+  Similar script would be created by Bob on the Ethereum blockchain. Note: Technically, Ethereum uses Solidity which is even more expressive, but the idea remains the same.
 
 
 We have shown a way where two individuals who do NOT trust each other are able to exchange funds across blockchains (atomically) without trusting any central authority or intermediary.

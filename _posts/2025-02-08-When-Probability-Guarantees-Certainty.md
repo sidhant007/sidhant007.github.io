@@ -181,7 +181,7 @@ Where we sample $$\theta \sim U(0, 1) \Rightarrow \text{frac}(a\theta) \sim U(0,
 
 <details>
 <summary>Spolier of why $\theta \sim U(0, 1) \Rightarrow \text{frac}(a\theta) \sim U(0, 1)$</summary>
-Can think of $\text{frac}(a\theta) = a\theta \text{ mod } 1$. Since $\theta \sim U(0, 1)$, multiplying it by $a$ stretches the probability mass in $(0, 1)$ to the range $(0, a)$ uniformly. Since $a$ is an integer, when we take “mod 1” (i.e. the fractional part) over this, we perfectly wrap this range $(0, a)$ on $(0, 1)$ and so the mass still remains uniform over $(0, 1)$, therefore $\text{frac}(a\theta) \sim U(0, 1)$
+Can think of $\text{frac}(a\theta) = a\theta \text{ mod } 1$. Since $\theta \sim U(0, 1)$, multiplying it by $a$ (think "constant") stretches the probability mass in $(0, 1)$ to the range $(0, a)$ uniformly. Since $a$ is an integer, when we take “mod 1” (i.e. the fractional part) over this, we perfectly wrap this range $(0, a)$ on $(0, 1)$ and so the mass still remains uniform over $(0, 1)$, therefore $\text{frac}(a\theta) \sim U(0, 1)$
 </details>
 <br>
 
@@ -236,6 +236,31 @@ $$
 \end{align*}
 $$
 
+Note: The last step, $\text{frac}(b_1\theta^{\ast}) + \text{frac}(b_2\theta^{\ast}) \neq \text{frac}(b_3\theta^{\ast}) \Rightarrow b_1 + b_2 \neq b_3$ is NOT true in general, take the counter-example of $b_1 = 3, b_2 = 8, b_3 = 11$ and $\theta^{\ast} = 0.6$, then $\text{frac}(3 \times 0.6) + \text{frac}(8 \times 0.6) = 0.8 + 0.8 \neq \text{frac}(11 \times 0.6) = 0.6$, whereas we know trivially that $3 + 8 = 11$.
+
+However, given $\text{frac}(b_1\theta^{\ast}), \text{frac}(b_2\theta^{\ast}), \text{frac}(b_3\theta^{\ast}) \in (1/3, 2/3)$, therefore the left-hand side of the expression can't wrap-over / carry-forward a +1 and still hit the $(1/3, 2/3)$ range, therefore the last step holds.
+
+<details>
+<summary>Spoiler for more rigorous proof of the last step</summary>
+Proof by contradiction:
+\begin{align*}
+  b_1 + b_2 &= b_3\\
+  b_1\theta^{\ast} + b_2\theta^{\ast} &= b_3\theta^{\ast}\\
+  \text{frac}(b_1\theta^{\ast} + b_2\theta^{\ast}) &= \text{frac}(b_3\theta^{\ast})\\
+\end{align*}
+
+Since $b_1, b_2, b_3 \in B$, we know that $\text{frac}(b_1\theta^{\ast}), \text{frac}(b_2\theta^{\ast}), \text{frac}(b_3\theta^{\ast}) \in (1/3, 2/3)$, therefore the left-hand side of the expression can't wrap-over / carry-forward a +1 and still hit the $(1/3, 2/3)$ ($\text{frac}(0.66 + 0.66) = 0.332 < 0.33$)
+
+\begin{align*}
+\Rightarrow \text{frac}(b_1\theta^{\ast}) + \text{frac}(b_2\theta^{\ast}) &< 1\\
+\Rightarrow \text{frac}(b_1\theta^{\ast} + b_2\theta^{\ast}) &= \text{frac}(b_1\theta^{\ast}) + \text{frac}(b_2\theta^{\ast})\\
+\text{frac}(b_1\theta^{\ast}) + \text{frac}(b_2\theta^{\ast}) &= \text{frac}(b_3\theta^{\ast})
+\end{align*}
+Contradiction!
+<br>
+Credits to Adhyyan Sekhsaria for flagging this missing step.
+</details>
+<br>
 Ta-da again!!
 
 <span class="tex2jax_ignore">[Re-read this proof a couple of times. If you have this nagging feeling: “that seems like a scam, but the proof works”, well that's probabilistic methods for you]</span>
@@ -280,5 +305,3 @@ Weaker version can be done by Pigeonhole Principle, but the original version req
 [^2]: 2: I certainly could not, the proof we cover in this blogpost is the one mentioned [here(Pg 23)](https://yufeizhao.com/pm/probmethod_notes.pdf)
 
 [^3]: 3: The sum of the two smallest elements in $(1/3, 2/3)$ (i.e. $(1/3 + \epsilon) + (1/3 + \epsilon) > 2/3)$ would exceed the largest possible value allowed (i.e. $< 2/3$), so no triplet where $b_1 + b_2 = b_3$ can be formed.
-
-[^4]: 4: 
