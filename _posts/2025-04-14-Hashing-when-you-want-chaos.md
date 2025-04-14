@@ -9,11 +9,11 @@ If you think “hashing is just for lookups”, then this post is your <span sty
 
 This two-part series explores how hashing is used beyond hashmaps - in settings where randomness and probabilistic reasoning are the real heroes.
 
-In this first part, we will see 2 examples where hashing is used to simulate uniformity, even when the input is highly structure or biased and helps in estimating the cardinality of sets (even when we can't list them explicitly)
+In this first part, we will see 2 examples where hashing is used to simulate uniformity, even when the input is highly structured or biased and helps in estimating the cardinality of sets (even when we can't list them explicitly)
 
 - LogLog: Here we are given a huge stream of numbers (think in the order of billions if not more), and we want to estimate the number of unique numbers in this stream (i.e. the cardinality of this set). The catch? You can’t store all the unique numbers in memory (assume big-data, so you don't have this much memory), so any typical leetcode solution of storing these in a hashmap or a binary search tree won't work. This is a very practical problem, popularly encountered in Redis[^1] (Example: keeping track of unique IPs visiting a website)
 
-- #SAT (ApproxMC): The well-known SAT problem looks as follows: given a boolean formula which is a AND of ORs (see $\phi(\overrightarrow{x})$ below), is there a way to assign values to the variables such that the formula evaluates to true? The problem is the most classical NP-Complete problem. Here, we discuss #SAT, i.e. counting the number of such satisfying assignments. Obviously this problem as it is, is quite hard (#P-Complete), but we will see how with a black-box (i.e. a SAT + XOR solver), we can estimate the number of satisfying assignments.
+- #SAT (ApproxMC): The well-known SAT problem looks as follows: given a boolean formula which is a AND of ORs (see $\phi(\overrightarrow{x})$ below), is there a way to assign values to the variables such that the formula evaluates to true? The problem is the most classical NP-Complete problem. Here, we'll discuss #SAT, i.e. counting the number of such satisfying assignments. Obviously this problem as it is, is quite hard (#P-Complete), but we will see how with a black-box (i.e. a SAT + XOR solver), we can estimate the number of satisfying assignments.
 
 $$ \phi(\overrightarrow{x}) = (x_1 \lor \neg x_2 \lor x_3) \land (\neg x_1 \lor x_2) \land (x_1 \lor x_3) $$
 
@@ -24,9 +24,9 @@ x_1 = 1, x_2 = 1, x_3 = 0\\
 x_1 = 1, x_2 = 1, x_3 = 1\\
 $$
 
-_I would recommend spending ~15 minutes to try to come up with the solution ideas yourself, to fully appreciate the novelty factor of the approaches we will discuss._
+_I recommend spending ~15 minutes trying to come up with some solution ideas yourself to fully appreciate the novelty of the approaches we'll explore._
 
-_Note: Discussions on LogLog are covered in Randomized Algorithms courses commonly. As for #SAT, I encountered it in Computational Complexity class._
+_Note: Discussions on LogLog is common in Randomized Algorithms courses. As for #SAT, I encountered it in a Computational Complexity class._
 
 ## Table of Contents
 
@@ -54,24 +54,23 @@ The core statistic we will use is: **R = max number of leading zeros in the hash
 ## Intuition of why this could work
 - Expected number of items starting with $k$ zeros is $n/2^k$, so if we see $2^{10}$ unique items, then on average we would expect ~1 item starting with 10 leading zeros. Inversing this argument, if we see 1 item starting with 10 leading zeros, then we can estimate that the number of unique items is $2^{10} = 1024$.
 
-- Say, we only see, say 4-5 distinct elements in the stream, for example: its a DNA string with only A/G/C/T, then it's very likely that all the 4 values hash to bitstrings which have few number of leading zeros.
+- Say, we only see, say 4-5 distinct elements in the stream, for example: its a DNA string with only A/G/C/T, then it's very likely that all the 4 values, hash to bitstrings with few number of leading zeros.
 
 Example: H(A) = 11010**10**, H(G) = 00010**10**, H(C) = 100100**1**, H(T) = 0011**100**, here the maximum number of leading zeros is 2 (i.e. $R = 2$), so we would estimate the cardinality to be $2^R = 4$
 
-- If we see a million unique elements in our stream, then there is a good enough chance that some elements will hash to bitstrings with a large number of leading zeros like: H(x) = 1010110000...000
+- If we see a million unique elements in our stream, then there is a good enough chance that some elements will hash to bitstrings with a large number of leading zeros like: H(x) = 10101**10...00**
 
-<div class="quiz-box">
-<strong>Quick Question:</strong>If you see 1 million unique elements in your stream, what do you think the value of $R$ (i.e., the max number of leading zeros) would be?
-<br><br>
+Quick Question: If you see 1 million unique elements in your stream, what do you think the value of $R$ (i.e., the max number of leading zeros) would be?
+
 Hint: If the probability of seeing a hash with $k$ leading 0s is $\frac{1}{2^k}$, and you’ve seen 1 million items, what’s the largest $k$ for which you'd expect at least one such hash?
-</div>
-
-
-- A useful way[^3] to think about this approach is a staircase approach, where each unique element in the stream is a ball falling down a staircase. At each step you chop off the leading bit of the ball (i.e the least significant bit), and if the bit is 0, the ball falls to the next step, otherwise it stops. So the ball stops at step $k$ if the ball has exactly $k$ leading zeros in its hashed value. The lower the ball falls to, the more unique elements we have seen. Intuitively this makes sense, roughly half of the balls will stop at the first step, since they hash to some odd number, and the other half will fall to the second step. Within these, half will fall to the third step, and so on. So the number of balls at each step is halved, and the expected number of balls at step $k$ is $n/2^k$.
 
 ## Thought Experiment
 
-Say you have a stream of n distinct IP addresses, and you hash each of them to a uniform random bitstring. Then you do the staircase experiment, i.e. each IP address hashes to a ball which falls down the staircase to the step where its hash value has the number of leading zeros equal to the step number. Now you observe that at step 7 there is only 1 ball, and there are no balls on subsequent steps. What would you guess the original number of unique balls there were at the start of this experiment at the top of the staircase? (Hint: Each step ~halves the number of balls)
+<div class="quiz-box">
+A useful way to think about this approach is a staircase, where each unique element in the stream is a ball falling down a staircase. At each step of the staircase you chop off the leading bit of the ball (i.e the least significant bit), and if that bit is 0, then ball keeps falling to the next step, otherwise it stops. So the ball stops at step $k$ if the hash value has exactly $k$ leading zeros. **The lower a ball falls to, the more unique elements we have seen**. Intuitively this makes sense, roughly half of the balls will stop at the first step, since they hash to some odd number, and the other half will fall to the second step. Within these, half will fall to the third step, and so on. So the number of balls at each step is halved, and the expected number of balls at step $k$ is $n/2^k$.
+</div>
+
+Say you have a stream of n distinct IP addresses (obviously, some appearing more than once), and you hash each of them to a uniform random bitstring. Then you do the staircase[^3] experiment, i.e. each IP address hashes to a ball which falls down the staircase to the step where its hash value has the number of leading zeros equal to the step number. Now you observe that at step 7 there is 1 ball, and there are no balls on subsequent steps. What would you guess the original number of unique balls there were at the start of this experiment at the top of the staircase? (Hint: Each step ~halves the number of balls)
 
 ## Playground (LogLog)
 
@@ -133,7 +132,7 @@ _Note: Sure, a 0.6 and 0.95 distinction may not seem overwhelming — but even m
 
 ## Playground (Core Idea)
 
-Add some input points on the left side and draw a region which defines a rare event on the right side. Then run, "Hash & Test", which will hash the input points to the output space, and if any of them lie in the region, we say the rare event happened. Based on this, we can infer if the number of points in the input space is large or small.
+Add some input points in the "input space" on the left side and draw a rare event region in the "hashed space" on the right side. Then run, "Hash & Test", which will hash the input points to the "hashed space", and if any of them lie in the region, we say the rare event happened. Based on this test, we can infer if the number of points in the input space is large or small.
 
 <div style="display: flex; gap: 20px;">
   <div>
@@ -153,7 +152,7 @@ Add some input points on the left side and draw a region which defines a rare ev
 <button id="default-button" style="margin-top: 8px;">Default Setup (20 points)</button>
 <button id="run-button" style="margin-top: 8px;">Hash & Test</button>
 
-%age area of rare region: **<span id="area"></span><br>**
+Percentage area of rare region: **<span id="area"></span><br>**
 Rare region is hit: **<span id="hit"></span><br>**
 Inference: **<span id="inference"></span><br>**
 
