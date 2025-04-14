@@ -44,3 +44,12 @@ $form-box-shadow-focus: $form-box-shadow, 0 0 5px adjust-color($action-color, $l
 // Animations
 $base-duration: 150ms;
 $base-timing: ease;
+
+.quiz-box {
+  border: 2px solid #ff9800;
+  border-left-width: 8px;
+  background-color: #fff3e0;
+  padding: 1em;
+  margin: 1.5em 0;
+  border-radius: 8px;
+}

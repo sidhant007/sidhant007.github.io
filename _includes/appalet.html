@@ -1,0 +1,329 @@
+<script src="https://cdn.jsdelivr.net/gh/garycourt/murmurhash-js/murmurhash3_gc.min.js"></script>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script>
+  function hashToUniform(num, seed) {
+      const hash = murmurhash3_32_gc(num.toString(), seed);
+      const bitstring = ((hash >>> 0) % 64).toString(2).padStart(6, '0');
+      return bitstring;
+    }
+
+    function generateStream() {
+        const streamSize = parseInt(document.getElementById('streamSize').value, 10);
+        const distinctElements = parseInt(document.getElementById('distinctElements').value, 10);
+        const uniqueValues = Array.from({length: distinctElements}, (_, i) => i + 1);
+
+        const stream = [];
+        for (let i = 0; i < streamSize; i++) {
+            const value = uniqueValues[Math.floor(Math.random() * distinctElements)];
+            stream.push(value);
+          }
+        document.getElementById('numberInput').value = stream.join(', ');
+      }
+
+    function estimateCardinality() {
+        const input = document.getElementById('numberInput').value;
+        const numbers = input.split(',').map(str => str.trim());
+
+        const containsInvalidValues = numbers.some(item => item === "" || isNaN(Number(item)));
+
+        if (numbers.length === 0 || containsInvalidValues) {
+            alert("Please enter valid numbers separated by commas."); 
+            return;
+          }
+
+        const epochInSeconds = Math.floor(Date.now() / 1000);
+        const seed = epochInSeconds & 0xFFFFFFFF;
+
+        const hashedValues = numbers.map(num => {
+            const hash = hashToUniform(num, seed);
+            const R = hash.length - hash.lastIndexOf('1') - 1;
+            return { num, hash, R };
+          });
+
+        const R = Math.max(...hashedValues.map(d => d.R));
+        const estimatedCardinality = 2 ** R;
+
+        document.getElementById('R').textContent = R;
+        document.getElementById('cardinality').textContent = estimatedCardinality;
+        runLogLogExperiment(hashedValues);
+      }
+
+    function runLogLogExperiment(hashedValues) {
+        const width = 800, height = 600;
+        const ballRadius = 20;
+        const margin = 60;
+        const stepHeight = 2 * ballRadius + 5;
+        const stepCount = Math.max(...hashedValues.map(d => d.R)) + 1;
+
+        const svg = d3.select("#chart")
+          .html("")
+          .append("svg")
+          .attr("width", width)
+          .attr("height", height);
+
+        const stepWidth = width / 8;
+        for (let i = 0; i < stepCount; i++) {
+            svg.append("rect")
+              .attr("x", margin - 5 + (i * stepWidth))
+              .attr("y", margin + ((i + 1) * stepHeight) + 20)
+              .attr("width", stepWidth)
+              .attr("height", stepHeight)
+              .attr("fill", "lightgray")
+              .attr("stroke", "#333");
+            svg.append("text")
+              .attr("x", margin - 5 + (i * stepWidth) + stepWidth / 2)
+              .attr("y", margin + ((i + 1) * stepHeight) + 20 + stepHeight / 2)
+              .attr("dy", "0.35em")
+              .attr("text-anchor", "middle")
+              .style("font-size", "12px")
+              .style("fill", "black")
+              .text(`R = ${i}`);
+          }
+
+        const xStep = (width / 8);
+        const yStep = stepHeight;
+
+        const ballGroups = svg.selectAll(".ball")
+          .data(hashedValues)
+          .enter()
+          .append("g")
+          .attr("class", "ball")
+          .attr("transform", (d, i) => {
+              const x = margin - ballRadius;
+              const y = margin - ballRadius;
+              return `translate(${x}, ${y})`;
+            })
+          .style("opacity", 0);
+
+        ballGroups.append("circle")
+          .attr("r", ballRadius)
+          .attr("fill", "red");
+
+        ballGroups.append("text")
+          .attr("text-anchor", "middle")
+          .attr("dy", "-0.3em")
+          .attr("fill", "white")
+          .style("font-size", "12px")
+          .style("font-weight", "bold")
+          .text(d => d.num);
+
+        ballGroups.append("text")
+          .attr("text-anchor", "middle")
+          .attr("dy", "0.9em")
+          .attr("fill", "black")
+          .style("font-size", "10px")
+          .html(d => {
+              const lastPartBold = d.hash.substring(d.hash.lastIndexOf('1'));
+              const rest = d.hash.substring(0, d.hash.lastIndexOf('1'));
+              return `${rest}<tspan style="font-weight:bold">${lastPartBold}</tspan>`;
+            });
+
+        const jitter = () => (Math.random() - 0.5) * 10;
+
+        ballGroups.transition()
+          .delay((d, i) => i * 800)
+          .style("opacity", 1)
+          .duration(600)
+          .ease(d3.easeCubicOut)
+          .attr("transform", (d, i) => {
+              const x = (margin + ((d.R + 1) * xStep)) - (width / 16);
+              const y = margin + ((d.R + 1) * stepHeight);
+              return `translate(${x}, ${y})`;
+            })
+      }
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const redDotsCanvas = document.getElementById("red-dots-box");
+  const regionCanvas = document.getElementById("region-box");
+  const clearButton = document.getElementById("clear-button");
+  const defaultButton = document.getElementById("default-button");
+  const runButton = document.getElementById("run-button");
+
+  const redDotsCtx = redDotsCanvas.getContext("2d");
+  const regionCtx = regionCanvas.getContext("2d");
+
+  let redDots = [];
+  let polygon = [];
+
+  let polygonDone = false;
+
+  redDotsCanvas.addEventListener("click", function(event) {
+    const rect = redDotsCanvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+
+    redDots.push({ x, y });
+
+    redDotsCtx.fillStyle = "red";
+    redDotsCtx.beginPath();
+    redDotsCtx.arc(x, y, 5, 0, Math.PI * 2);
+    redDotsCtx.fill();
+  });
+
+  regionCanvas.addEventListener("click", function(event) {
+    if (polygonDone) return;
+    const rect = regionCanvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+
+    if (polygon.length >= 2 && Math.abs(x - polygon[0].x) < 10 && Math.abs(y - polygon[0].y) < 10) {
+      polygonDone = true;
+      regionCtx.fillStyle = "blue";
+      regionCtx.beginPath();
+      regionCtx.moveTo(polygon[polygon.length - 1].x, polygon[polygon.length - 1].y);
+      regionCtx.lineTo(polygon[0].x, polygon[0].y);
+      regionCtx.strokeStyle = "blue";
+      regionCtx.lineWidth = 2;
+      regionCtx.stroke();
+    }
+    else {
+      polygon.push({ x, y });
+
+      regionCtx.fillStyle = "black";
+      regionCtx.beginPath();
+      regionCtx.arc(x, y, 3, 0, Math.PI * 2);
+      regionCtx.fill();
+
+      if (polygon.length > 1) {
+        regionCtx.beginPath();
+        regionCtx.moveTo(polygon[polygon.length - 2].x, polygon[polygon.length - 2].y);
+        regionCtx.lineTo(x, y);
+        regionCtx.strokeStyle = "blue";
+        regionCtx.lineWidth = 2;
+        regionCtx.stroke();
+      }
+    }
+  });
+
+  clearButton.addEventListener("click", function() {
+    redDotsCtx.clearRect(0, 0, redDotsCanvas.width, redDotsCanvas.height);
+    regionCtx.clearRect(0, 0, regionCanvas.width, regionCanvas.height);
+    redDots = [];
+    polygon = [];
+    polygonDone = false;
+  });
+
+  defaultButton.addEventListener("click", function() {
+    redDotsCtx.clearRect(0, 0, redDotsCanvas.width, redDotsCanvas.height);
+    regionCtx.clearRect(0, 0, regionCanvas.width, regionCanvas.height);
+    redDots = [];
+    polygon = [
+      { x: 100, y: 160 },
+      { x: 200, y: 40 },
+      { x: 300, y: 160 },
+    ];
+    polygonDone = true;
+
+    for (let i = 0; i < 20; i++) {
+      const x = Math.random() * redDotsCanvas.width;
+      const y = Math.random() * redDotsCanvas.height;
+      redDots.push({ x, y });
+    }
+
+    redDots.forEach(dot => {
+      redDotsCtx.fillStyle = "red";
+      redDotsCtx.beginPath();
+      redDotsCtx.arc(dot.x, dot.y, 5, 0, Math.PI * 2);
+      redDotsCtx.fill();
+    });
+
+    for (let i = 0; i < polygon.length; i++) {
+      regionCtx.fillStyle = "black";
+      regionCtx.beginPath();
+      regionCtx.arc(polygon[i].x, polygon[i].y, 3, 0, Math.PI * 2);
+      regionCtx.fill();
+    }
+
+    for (let i = 0; i < polygon.length; i++) {
+      regionCtx.beginPath();
+      regionCtx.moveTo(polygon[i].x, polygon[i].y);
+      regionCtx.lineTo(polygon[(i + 1) % polygon.length].x, polygon[(i + 1) % polygon.length].y);
+      regionCtx.strokeStyle = "blue";
+      regionCtx.lineWidth = 2;
+      regionCtx.stroke();
+    }
+  });
+
+  runButton.addEventListener("click", function() {
+    regionCtx.clearRect(0, 0, regionCanvas.width, regionCanvas.height);
+    if (polygon.length < 3) {
+      alert("Please create a polygon with at least 3 points.");
+      return;
+    }
+
+    for (let i = 0; i < polygon.length; i++) {
+      regionCtx.fillStyle = "blue";
+      regionCtx.beginPath();
+      regionCtx.arc(polygon[i].x, polygon[i].y, 3, 0, Math.PI * 2);
+      regionCtx.fill();
+    }
+    for (let i = 0; i < polygon.length; i++) {
+      regionCtx.beginPath();
+      regionCtx.moveTo(polygon[i].x, polygon[i].y);
+      regionCtx.lineTo(polygon[(i + 1) % polygon.length].x, polygon[(i + 1) % polygon.length].y);
+      regionCtx.strokeStyle = "blue";
+      regionCtx.lineWidth = 2;
+      regionCtx.stroke();
+    }
+
+    const hashedDots = redDots.map(dot => {
+      x = Math.random() * redDotsCanvas.width;
+      y = Math.random() * redDotsCanvas.height;
+      return { x, y };
+    });
+
+    hashedDots.forEach(dot => {
+        regionCtx.fillStyle = "green";
+        regionCtx.beginPath();
+        regionCtx.arc(dot.x, dot.y, 5, 0, Math.PI * 2);
+        regionCtx.fill();
+    });
+
+    function pointInPolygon(point, vertices) {
+      let isInside = false;
+      for (let i = 0, j = vertices.length - 1; i < vertices.length; j = i++) {
+        const xi = vertices[i].x, yi = vertices[i].y;
+        const xj = vertices[j].x, yj = vertices[j].y;
+
+        const intersect = ((yi > point.y) !== (yj > point.y)) &&
+                          (point.x < (xj - xi) * (point.y - yi) / (yj - yi) + xi);
+        if (intersect) isInside = !isInside;
+      }
+      return isInside;
+    }
+
+    function calculatePolygonArea(vertices) {
+      let area = 0;
+      for (let i = 0; i < vertices.length; i++) {
+        const j = (i + 1) % vertices.length;
+        area += vertices[i].x * vertices[j].y;
+        area -= vertices[i].y * vertices[j].x;
+      }
+      return Math.abs(area) / 2;
+    }
+
+    const isInside = hashedDots.filter(dot => pointInPolygon(dot, polygon)); 
+    isInside.forEach(dot => {
+        regionCtx.fillStyle = "purple";
+        regionCtx.beginPath();
+        regionCtx.arc(dot.x, dot.y, 5, 0, Math.PI * 2);
+        regionCtx.fill();
+    });
+    const polygonArea = calculatePolygonArea(polygon);
+    const percentage_area = polygonArea / (redDotsCanvas.width * redDotsCanvas.height);
+    const guessInputPoints = (1.0 / percentage_area).toFixed(2);
+    document.getElementById('area').textContent = (percentage_area * 100).toFixed(2) + "%";
+    if (isInside.length > 0) {
+        document.getElementById('hit').textContent = 'True';
+        document.getElementById('inference').textContent = `#Inputs points > ${guessInputPoints} (Probably)`;
+    } else {
+        document.getElementById('hit').textContent = 'False';
+        document.getElementById('inference').textContent = `#Inputs points < ${guessInputPoints} (Probably)`;
+    }
+  });
+
+});
+</script>
