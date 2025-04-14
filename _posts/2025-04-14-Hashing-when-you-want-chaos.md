@@ -180,7 +180,9 @@ Now, comes the core idea:
 
 > We will use the hash function to define a rare event, i.e. if there exists an assignment $\overrightarrow{x} = (x_1, x_2, \dots, x_n)$ such that $\phi(\overrightarrow{x}) = 1 \land H(\overrightarrow{x}) = 0^k$, then with high probability number of satisfying assignments is $> 64S$, and $< S$ otherwise.
 
-Here $0^k$ is the all-zero bitstring of size $k$, and is in no way special. It is just used to define a rare event. The idea same as before, is that if the number of satisfying assignments is large, then there is a good chance that some of them will hash to $0^k$ (i.e. the rare event will happen).
+Here, we will use our SAT+XOR black-box solver to get the answer to the yes/no satisfiability question for $\phi(\overrightarrow{x}) = 1 \land H(\overrightarrow{x}) = 0^k$
+
+$0^k$ is the all-zero bitstring of size $k$, and is in no way special. It is just used to define a rare event. The idea same as before, is that if the number of satisfying assignments is large, then there is a good chance that some of them will hash to $0^k$ (i.e. the rare event will happen).
 
 By some math[^8], we can show that with probability $\geq 3/4$, this algorithm correctly determines if the number of satisfying assignments is $> 64S$ or $< S$. We can repeat this experiment multiple times to get a better confidence level, and subsequently binary search on $S$ to get a better estimate of the number of satisfying assignments.
 
