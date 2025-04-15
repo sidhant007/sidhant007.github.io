@@ -21,7 +21,7 @@ Q1. $\text{[Medium]}$ Given a graph $G$, where $M$ denotes the number of pairs o
 
 <span class="tex2jax_ignore">_[You might ask: Who cares about this problem? Well, imagine asking an intern on your team to draw a graph for a PowerPoint slide, only to find it looks cluttered with too many crossings. At least now you can berate them, empowered with the knowledge that there “exists” a better way to draw the graph, though you might not know it — jokes aside, I agree that some of these problems can feel a bit out there on the edge of relevance!]_</span>
 
-Q2 $\text{[Hard]}$ Given a set of positive integers $A$ of size $N$, show that there always exists a subset $B \subseteq A$, of size $\geq N/3$ such that:
+Q2. $\text{[Hard]}$ Given a set of positive integers $A$ of size $N$, show that there always exists a subset $B \subseteq A$, of size $\geq N/3$ such that:
 
 $$ \forall b_1, b_2, b_3 \in B, b_1 + b_2 \neq b_3 $$
 
@@ -159,7 +159,7 @@ So in $2$ out of the $6$ ways to orient (a, b, c, d) on a circle do the two edge
 
 **Food for thought**: Design an algorithm that, for any given graph $G$, **finds** a 2D-drawing with $\leq 2M/5$ crossings. Sometimes proving existence hints you at ways to even find THE object or a slightly weaker version of it.
 
-> Q2 $\text{[Hard]}$ Given a set of positive integers $A$ of size $N$, show that there always exists a subset $B \subseteq A$, of size $\geq N/3$ such that:
+> Q2. $\text{[Hard]}$ Given a set of positive integers $A$ of size $N$, show that there always exists a subset $B \subseteq A$, of size $\geq N/3$ such that:
 > $$ \forall b_1, b_2, b_3 \in B, b_1 + b_2 \neq b_3 $$
 > <br>i.e. for all triplets in $B$, sum of two elements does not equal to the third element
 
