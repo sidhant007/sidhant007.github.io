@@ -305,6 +305,79 @@ document.addEventListener("DOMContentLoaded", function() {
       return Math.abs(area) / 2;
     }
 
+    function plotHitLikelihood(p) {
+      const data = [];
+      for (let n = 1;; n++) {
+        const prob = 1 - Math.pow(1 - p, n);
+        data.push({ n, prob });
+        if (prob >= 0.99) break;
+      }
+      const width = 500, height = 300, margin = { top: 20, right: 20, bottom: 40, left: 50 };
+
+      d3.select("#likelihood-plot").html("");
+      const svg = d3.select("#likelihood-plot")
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height);
+
+      const x = d3.scaleLinear()
+        .domain([1, data.length + 1])
+        .range([margin.left, width - margin.right]);
+
+      const y = d3.scaleLinear()
+        .domain([0, 1])
+        .range([height - margin.bottom, margin.top]);
+
+      const line = d3.line()
+        .x(d => x(d.n))
+        .y(d => y(d.prob));
+
+      svg.append("path")
+        .datum(data)
+        .attr("fill", "none")
+        .attr("stroke", "steelblue")
+        .attr("stroke-width", 2)
+        .attr("d", line);
+
+      svg.append("g")
+        .attr("transform", `translate(0,${height - margin.bottom})`)
+        .call(d3.axisBottom(x));
+
+      svg.append("g")
+        .attr("transform", `translate(${margin.left},0)`)
+        .call(d3.axisLeft(y));
+      const percentiles = [0.2, 0.5, 0.8];
+      percentiles.forEach(p_thresh => {
+        const n_value = Math.ceil(Math.log(1 - p_thresh) / Math.log(1 - p));
+        svg.append("line")
+          .attr("x1", x(n_value))
+          .attr("x2", x(n_value))
+          .attr("y1", y(0))
+          .attr("y2", y(1))
+          .attr("stroke", "red")
+          .attr("stroke-dasharray", "4 2");
+
+        svg.append("text")
+          .attr("x", x(n_value) + 5)
+          .attr("y", y(p_thresh + 0.05))
+          .text(`${Math.round(p_thresh * 100)}%: n ≈ ${n_value}`)
+          .style("font-size", "10px")
+          .attr("fill", "red");
+      });
+      svg.append("text")
+        .attr("x", width / 2)
+        .attr("y", height - 5)
+        .attr("text-anchor", "middle")
+        .text("Number of Input Points (n)");
+
+      svg.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("x", -height / 2)
+        .attr("y", 15)
+        .attr("text-anchor", "middle")
+        .text("Probability of Observing a Hit");
+    }
+
     const isInside = hashedDots.filter(dot => pointInPolygon(dot, polygon)); 
     isInside.forEach(dot => {
         regionCtx.fillStyle = "purple";
@@ -314,16 +387,16 @@ document.addEventListener("DOMContentLoaded", function() {
     });
     const polygonArea = calculatePolygonArea(polygon);
     const percentage_area = polygonArea / (redDotsCanvas.width * redDotsCanvas.height);
-    const guessInputPoints = (1.0 / percentage_area).toFixed(2);
+    const guessInputPoints = (Math.log(0.5) / Math.log(1 - percentage_area)).toFixed(2);
     document.getElementById('area').textContent = (percentage_area * 100).toFixed(2) + "%";
     if (isInside.length > 0) {
         document.getElementById('hit').textContent = 'True';
-        document.getElementById('inference').textContent = `#Inputs points > ${guessInputPoints} (Probably)`;
+        document.getElementById('inference').textContent = `#Inputs points > ${guessInputPoints} (probably)`;
     } else {
         document.getElementById('hit').textContent = 'False';
-        document.getElementById('inference').textContent = `#Inputs points < ${guessInputPoints} (Probably)`;
+        document.getElementById('inference').textContent = `#Inputs points < ${guessInputPoints} (probably)`;
     }
+    plotHitLikelihood(percentage_area);
   });
-
 });
 </script>

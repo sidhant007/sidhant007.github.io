@@ -152,9 +152,11 @@ Add some input points in the "input space" on the left side and draw a rare even
 <button id="default-button" style="margin-top: 8px;">Default Setup (20 points)</button>
 <button id="run-button" style="margin-top: 8px;">Hash & Test</button>
 
-Percentage area of rare region: **<span id="area"></span><br>**
+Percentage area of rare region (p): **<span id="area"></span><br>**
 Rare region is hit: **<span id="hit"></span><br>**
 Inference: **<span id="inference"></span><br>**
+
+<div id="likelihood-plot"></div>
 
 ## #SAT ([ApproxMC](https://github.com/meelgroup/approxmc))
 
@@ -168,7 +170,7 @@ We solve the simpler problem, call it "#SAT $> 64S$ or $< S$", where we are give
 
 For this simpler problem, we define a hash function $H$ that takes in every possible assignment of the variables and hashes it to a uniform bitstring of size $k$ 
 
-$$H: \{0, 1\}^n \to \{0, 1\}^k$$ [^7]
+$$H: \{0, 1\}^n \to \{0, 1\}^{k + 3}$$ [^7]
 
 For instance: $H(x_1 = 0, x_2 = 1, x_3 = 1, \dots, x_n = 1) = 11010, H(x_1 = 1, x_2 = 0, x_3 = 1, \dots, x_n = 0) = 00100$
 
@@ -178,13 +180,11 @@ _Toy example: $H(x_1, x_2, \dots, x_n)_0 = x_1 \oplus x_3 \oplus x_n, H(x_1, x_2
 
 Now, comes the core idea:
 
-> We will use the hash function to define a rare event, i.e. if there exists an assignment $\overrightarrow{x} = (x_1, x_2, \dots, x_n)$ such that $\phi(\overrightarrow{x}) = 1 \land H(\overrightarrow{x}) = 0^k$, then with high probability number of satisfying assignments is $> 64S$, and $< S$ otherwise.
+> We will use the hash function to define a rare event, i.e. if there exists an assignment $\overrightarrow{x} = (x_1, x_2, \dots, x_n)$ such that $\phi(\overrightarrow{x}) = 1 \land H(\overrightarrow{x}) = 0^{k + 3}$, then with high probability number of satisfying assignments is $> 64S$, and $< S$ otherwise.
 
 Here, we will use our SAT+XOR black-box solver to get the answer to the yes/no satisfiability question for $\phi(\overrightarrow{x}) = 1 \land H(\overrightarrow{x}) = 0^k$
 
-$0^k$ is the all-zero bitstring of size $k$, and is in no way special. It is just used to define a rare event. The idea same as before, is that if the number of satisfying assignments is large, then there is a good chance that some of them will hash to $0^k$ (i.e. the rare event will happen).
-
-By some math[^8], we can show that with probability $\geq 3/4$, this algorithm correctly determines if the number of satisfying assignments is $> 64S$ or $< S$. We can repeat this experiment multiple times to get a better confidence level, and subsequently binary search on $S$ to get a better estimate of the number of satisfying assignments.
+$0^{k + 3}$ is the all-zero bitstring of size $k + 3$, and is in no way special. It is just used to define a rare event. The idea same as before, is that if the number of satisfying assignments is large, then there is a good chance that some of them will hash to $0^{k + 3}$ (i.e. the rare event will happen).
 
 <figure style="display: block; margin: auto; width: 70%; max-width: 600px; height: auto;">
   <img src="{{site.baseurl}}/images/chaos_2.png" alt="Sketch of hashing">
@@ -192,7 +192,9 @@ By some math[^8], we can show that with probability $\geq 3/4$, this algorithm c
 </figure>
 <br>
 
-_Note: Let the number of satisfying assignments be $P$, and after hashing all those assignments fall into random $2^k$ buckets, then in expectation one would see $P/2^k$ satisfying assignments in the $0^k$ bucket. Testing if this number is $\geq 1$ or not, is analogous to the [Playground (Core Idea)](#playground-core-idea) section above._
+_Note: Let the number of satisfying assignments be $P$, and after hashing all those assignments fall into random $2^{k + 3}$ buckets, then in expectation one would see $P/2^{k + 3}$ satisfying assignments in the $0^{k + 3}$ bucket. We have the relationship between $S$ and $k$, that $S = 2^{k}$, so that this number $\frac{P}{2^{k + 3}} = \frac{P}{8S}$. Testing if this is $\geq 1$ or not, helps us predict if $P$ is $> 64S$ or $< S$, this testing idea is analgous to the [Playground (Core Idea)](#playground-core-idea) section above._
+
+By some math[^8], we can show that with probability $\geq 3/4$, this algorithm correctly determines if the number of satisfying assignments is $> 64S$ or $< S$. We can repeat this experiment multiple times to get a better confidence level, and subsequently binary search on $S$ to get a better estimate of the number of satisfying assignments.
 
 ## Conclusion
 
@@ -214,6 +216,6 @@ In part two, we will look at settings where hashing isn't just random chaos - bu
 
 [^6]: 6: [CryptoMiniSat SAT Solver](https://github.com/msoos/cryptominisat) is one such popular SAT solver (with the XOR extension)
 
-[^7]: 7: The precise math, requires $k$ to be $k + 3$ (Ignoring it here for simplicity)
+[^7]: 7: The precise math, requires $k$ to be $k + 3$ (A nuisance for the math to work out)
 
 [^8]: 8: Credits to Prof. Li-Yang Tan who teaches CS254 at Stanford. Attaching his lecture notes [here](https://drive.google.com/file/d/1qPReOndjFydj-x2DtG90KDZtO4zrlAsn/view?usp=sharing), which cover the math as well as how to construct the required hash function
