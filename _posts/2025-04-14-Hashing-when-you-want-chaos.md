@@ -45,32 +45,32 @@ _Note: Discussions on LogLog is common in Randomized Algorithms courses. As for 
 
 LogLog algorithm (also called Flajolet Martin) and its improved cousin HyperLogLog, estimate the cardinality of a set, using very little space (i.e. O(log log n) bits, where n is the cardinality of the set). 
 
-Suppose we have a hash function $H$ which maps[^2] each element of the stream to a uniform bitstring. Say H(35) = 10011100**100**, then we say the number of leading zeros in the hash value of 35 is 2. The number of leading zeros is simply the count of 0s from the left-most bit to the first 1 bit.
+Suppose we have a hash function $H$ which maps[^2] each element of the stream to a uniform bitstring. Say H(35) = 10011100**100**, then we say the number of trailing zeros in the hash value of 35 is 2. The number of trailing zeros is simply the count of 0s from the right-most bit to the first 1 bit.
 
 > If you hash each item to a uniformly random bitstring, the probability it starts with $k$ zeros is $1/2^k$.
 
-The core statistic we will use is: **R = max number of leading zeros in the hash values of the elements in the set**, and our estimate will be **$n' = 2^R$**
+The core statistic we will use is: **R = max number of trailing zeros in the hash values of the elements in the set**, and our estimate will be **$n' = 2^R$**
 
 ## Intuition of why this could work
-- Expected number of items starting with $k$ zeros is $n/2^k$, so if we see $2^{10}$ unique items, then on average we would expect ~1 item starting with 10 leading zeros. Inversing this argument, if we see 1 item starting with 10 leading zeros, then we can estimate that the number of unique items is $2^{10} = 1024$.
+- Expected number of items starting with $k$ zeros is $n/2^k$, so if we see $2^{10}$ unique items, then on average we would expect ~1 item starting with 10 trailing zeros. Inversing this argument, if we see 1 item with 10 trailing zeros, then we can estimate that the number of unique items is $2^{10} = 1024$.
 
-- Say, we only see, say 4-5 distinct elements in the stream, for example: its a DNA string with only A/G/C/T, then it's very likely that all the 4 values, hash to bitstrings with few number of leading zeros.
+- Say, we only see, say 4-5 distinct elements in the stream, for example: its a DNA string with only A/G/C/T, then it's very likely that all the 4 values, hash to bitstrings with few number of trailing zeros.
 
-Example: H(A) = 11010**10**, H(G) = 00010**10**, H(C) = 100100**1**, H(T) = 0011**100**, here the maximum number of leading zeros is 2 (i.e. $R = 2$), so we would estimate the cardinality to be $2^R = 4$
+Example: H(A) = 11010**10**, H(G) = 00010**10**, H(C) = 100100**1**, H(T) = 0011**100**, here the maximum number of trailing zeros is 2 (i.e. $R = 2$), so we would estimate the cardinality to be $2^R = 4$
 
-- If we see a million unique elements in our stream, then there is a good enough chance that some elements will hash to bitstrings with a large number of leading zeros like: H(x) = 10101**10...00**
+- If we see a million unique elements in our stream, then there is a good enough chance that some elements will hash to bitstrings with a large number of trailing zeros like: H(x) = 10101**10...00**
 
-Quick Question: If you see 1 million unique elements in your stream, what do you think the value of $R$ (i.e., the max number of leading zeros) would be?
+Quick Question: If you see 1 million unique elements in your stream, what do you think the value of $R$ (i.e., the max number of trailing zeros) would be?
 
-Hint: If the probability of seeing a hash with $k$ leading 0s is $\frac{1}{2^k}$, and you’ve seen 1 million items, what’s the largest $k$ for which you'd expect at least one such hash?
+Hint: If the probability of seeing a hash with $k$ trailing 0s is $\frac{1}{2^k}$, and you’ve seen 1 million items, what’s the largest $k$ for which you'd expect at least one such hash?
 
 ## Thought Experiment
 
 <div class="quiz-box">
-A useful way to think about this approach is a staircase, where each unique element in the stream is a ball falling down a staircase. At each step of the staircase you chop off the leading bit of the ball (i.e the least significant bit), and if that bit is 0, then ball keeps falling to the next step, otherwise it stops. So the ball stops at step $k$ if the hash value has exactly $k$ leading zeros. **The lower a ball falls to, the more unique elements we have seen**. Intuitively this makes sense, roughly half of the balls will stop at the first step, since they hash to some odd number, and the other half will fall to the second step. Within these, half will fall to the third step, and so on. So the number of balls at each step is halved, and the expected number of balls at step $k$ is $n/2^k$.
+A useful way to think about this approach is a staircase, where each unique element in the stream is a ball falling down a staircase. At each step of the staircase you chop off the right-most bit of the ball (i.e the least significant bit), and if that bit is 0, then ball keeps falling to the next step, otherwise it stops. So the ball stops at step $k$ if the hash value has exactly $k$ trailing zeros. **The lower a ball falls to, the more unique elements we have seen**. Intuitively this makes sense, roughly half of the balls will stop at the first step, since they hash to some odd number, and the other half will fall to the second step. Within these, half will fall to the third step, and so on. So the number of balls at each step is halved, and the expected number of balls at step $k$ is $n/2^k$.
 </div>
 
-Say you have a stream of n distinct IP addresses (obviously, some appearing more than once), and you hash each of them to a uniform random bitstring. Then you do the staircase[^3] experiment, i.e. each IP address hashes to a ball which falls down the staircase to the step where its hash value has the number of leading zeros equal to the step number. Now you observe that at step 7 there is 1 ball, and there are no balls on subsequent steps. What would you guess the original number of unique balls there were at the start of this experiment at the top of the staircase? (Hint: Each step ~halves the number of balls)
+Say you have a stream of n distinct IP addresses (obviously, some appearing more than once), and you hash each of them to a uniform random bitstring. Then you do the staircase[^3] experiment, i.e. each IP address hashes to a ball which falls down the staircase to the step where its hash value has the number of trailing zeros equal to the step number. Now you observe that at step 7 there is 1 ball, and there are no balls on subsequent steps. What would you guess the original number of unique balls there were at the start of this experiment at the top of the staircase? (Hint: Each step ~halves the number of balls)
 
 ## Playground (LogLog)
 
@@ -96,7 +96,7 @@ border: 1px solid #ccc;
 
 <button onclick="estimateCardinality()">Run LogLog</button>
 
-R (Maximum number of leading zeros): **<span id="R"></span>**
+R (Maximum number of trailing zeros): **<span id="R"></span>**
 
 Estimated Cardinality: **<span id="cardinality"></span>**
 
@@ -110,17 +110,17 @@ _The staircase animation below is built with D3.js — crude for now. PRs welcom
 </figure>
 <br>
 
-Notice, we never stored the full stream in this algorithm. Neither did we store the hash values of the elements. We only hashed each element as it came, maintained a single integer $R$ (which is the maximum number of leading zeros we have seen so far), and then at the end estimated the cardinality as $2^R$. With a single integer R (which can range from 0 to log(n), thus taking O(log log n) bits), we were able to do our estimate.
+Notice, we never stored the full stream in this algorithm. Neither did we store the hash values of the elements. We only hashed each element as it came, maintained a single integer $R$ (which is the maximum number of trailing zeros we have seen so far), and then at the end estimated the cardinality as $2^R$. With a single integer R (which can range from 0 to log(n), thus taking O(log log n) bits), we were able to do our estimate.
 
 ## HyperLogLog extension idea
 
-**HyperLogLog** just builds up on LogLog, by dividing the stream into buckets using some prefix of the hash value, say first two bits of the hash value decide the bucket id (in 0 to 3) and then in each bucket, we keep track of a local $R_i$ (i.e. the maximum number of leading zeros), then for each bucket we get the estimate $n'_i = 2^{R_i}$, and finally we combine these estimates (interestingly enough, harmonic mean is the best way to lower the variance) to get the final estimate[^4]. 
+**HyperLogLog** just builds up on LogLog, by dividing the stream into buckets using some prefix of the hash value, say first two bits of the hash value decide the bucket id (in 0 to 3) and then in each bucket, we keep track of a local $R_i$ (i.e. the maximum number of trailing zeros), then for each bucket we get the estimate $n'_i = 2^{R_i}$, and finally we combine these estimates (interestingly enough, harmonic mean is the best way to lower the variance) to get the final estimate[^4]. 
 
 _Note_: I skip the math analysis portion, as I think the intuition is good enough to understand the core idea of this algorithm. If you are interested in the math, I would recommend looking at the [NUS Lecture Notes](https://www.comp.nus.edu.sg/~gilbert/CS5234/2019/lectures/04.Streams-slides.pdf) and other readings[^5]
 
 ## Why was hashing helpful here?
 
-The hash function along with the statistic of "maximum number of leading zeros" gave us a way to measure a rare event on the set of unique elements of the stream. Our intuition was that if the rare event happens then that implies there is a large number of unique elements in the stream.
+The hash function along with the statistic of "maximum number of trailing zeros" gave us a way to measure a rare event on the set of unique elements of the stream. Our intuition was that if the rare event happens then that implies there is a large number of unique elements in the stream.
 
 Take a toy example: Say we have some hash function, which hashes our numbers to the range $[0, 1]$ uniformly, and we have a way to define the rare event as: **Is there a hash value in our stream which lies in the range $[0.2, 0.3]$**. Now crudely speaking, if you hash say only 5 unique elements, do you think this rare event will mostly be true? (Answer: Not really, with probability $0.9^{5} \sim 0.6$, this event won't happen)
 
@@ -128,7 +128,7 @@ But what if we hash ~30 unique elements, do you then think this rare event will 
 
 _Note: Sure, a 0.6 and 0.95 distinction may not seem overwhelming — but even modest gaps let us amplify confidence through repetition. Till the time these are better than 50-50 chance, we can simply run the experiment multiple times and take the majority vote result. Some math can show that you only need to run such an experiment a few times to become super-confident (say 99%) about the result._
 
-> Testing against a rare event (it could be leading number of zeros or defining some other sort of "subset" of the hash values) and then reverse-engineering the estimated number of unique samples based on the result of the test is a common theme when we use hashing to randomize our input space.
+> Testing against a rare event (it could be trailing number of zeros or defining some other sort of "subset" of the hash values) and then reverse-engineering the estimated number of unique samples based on the result of the test is a common theme when we use hashing to randomize our input space.
 
 ## Playground (Core Idea)
 
