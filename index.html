@@ -9,8 +9,8 @@ title: Home
   <div class="container">
     <!-- Sorting Buttons -->
     <div class="sorting-controls">
-      <button class="sort-button" onclick="sortPosts('tag-date')">By Tag</button>
       <button class="sort-button" onclick="sortPosts('date-tag')">By Date</button>
+      <button class="sort-button" onclick="sortPosts('tag-date')">By Tag</button>
     </div>
 
     <!-- Blog Posts -->
@@ -82,6 +82,6 @@ title: Home
       });
     }
     window.sortPosts = sortPosts;
-    sortPosts("tag-date");
+    sortPosts("date-tag");
 });
 </script>
