@@ -1,0 +1,368 @@
+<style>
+#tv-chart {
+        display: none;
+        width: 800px;
+        height: 400px;
+        margin-top: 20px;
+}
+</style>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script>
+        google.charts.load('current', {'packages':['corechart']});
+                document.addEventListener("DOMContentLoaded", function () {
+                                const n = 5;
+                                const n_fact = 120;
+                                const nodeRadius = 4;
+                                const forceStrength = -20;
+                                const width = 400;
+                                const height = 400;
+                                let redNodes = [];
+                                let blueNodes = [];
+                                let greenNodeId = null;
+
+                                function getPermutations(array) {
+                                                const results = [];
+                                                function permute(arr, memo = []) {
+                                                                if (arr.length === 0) {
+                                                                                results.push(memo);
+                                                                        } else {
+                                                                                        for (let i = 0; i < arr.length; i++) {
+                                                                                                        const curr = arr.slice();
+                                                                                                        const next = curr.splice(i, 1);
+                                                                                                        permute(curr.slice(), memo.concat(next));
+                                                                                                }
+                                                                                }
+                                                        }
+                                                permute(array);
+                                                return results;
+                                        }
+
+                                const permutations = getPermutations([...Array(n).keys()]);
+                                const permStrToId = new Map(permutations.map((p, i) => [p.join(""), i]));
+
+                                function putOnTopNeighbors(perm) {
+                                                return perm.map((_, i) => {
+                                                                const copy = perm.slice();
+                                                                const [card] = copy.splice(i, 1);
+                                                                copy.unshift(card);
+                                                                return copy.join("");
+                                                        });
+                                        }
+
+                                function riffleNeighbors(perm) {
+                                                const results = [];
+                                                const total = 1 << n;
+                                                for (let bits = 0; bits < total; bits++) {
+                                                                const left = [], right = [];
+                                                                for (let i = 0; i < n; i++) {
+                                                                                ((bits >> i) & 1 ? right : left).push(perm[i]);
+                                                                        }
+                                                                results.push([...left, ...right].join(""));
+                                                        }
+                                                return results;
+                                        }
+
+                                function buildGraph(neighborFn) {
+                                                const nodes = permutations.map((perm, i) => ({
+                                                                id: i,
+                                                                label: perm.map(d => d + 1).join(""),
+                                                                x: Math.random() * width,
+                                                                y: Math.random() * height,
+                                                                vx: 0,
+                                                                vy: 0
+                                                        }));
+
+                                                const edges = [];
+                                                permutations.forEach((perm, i) => {
+                                                                const neighbors = neighborFn(perm);
+                                                                neighbors.forEach(nStr => {
+                                                                                const j = permStrToId.get(nStr);
+                                                                                if (j !== undefined) edges.push({ source: i, target: j });
+                                                                        });
+                                                        });
+
+                                                return { nodes, edges };
+                                        }
+
+                                function runForceLayout(graph, ctx, canvasId, dist = null) {
+                                                let selectedNodeId = 0;
+                                                const simulation = d3.forceSimulation(graph.nodes)
+                                                        .force("charge", d3.forceManyBody().strength(forceStrength))
+                                                        .force("center", d3.forceCenter(width / 2, height / 2))
+                                                        .force("link", d3.forceLink(graph.edges).id(d => d.id).distance(20))
+                                                        .alphaDecay(0.02)
+                                                        .on("tick", draw);
+
+                                                const tooltip = document.getElementById("tooltip");
+                                                const canvas = document.getElementById(canvasId);
+
+                                                function draw() {
+                                                                ctx.clearRect(0, 0, width, height);
+                                                                ctx.strokeStyle = "#ccc";
+                                                                let normalEdges = [];
+                                                                let highlightedEdges = [];
+                                                                graph.edges.forEach(link => {
+                                                                        const src = graph.nodes[link.source.index ?? link.source];
+                                                                        const tgt = graph.nodes[link.target.index ?? link.target];
+                                                                        if (canvasId == "put-on-top-coupling") {
+                                                                                found = false;
+                                                                                for (let i = 0; i < redNodes.length - 1; i++) {
+                                                                                        if (redNodes[i] == src.id && redNodes[i + 1] == tgt.id) {
+                                                                                                found = true;
+                                                                                                highlightedEdges.push({ src, tgt, color: "#f00" });
+                                                                                        }
+                                                                                }
+                                                                                for (let i = 0; i < blueNodes.length - 1; i++) {
+                                                                                        if (blueNodes[i] == src.id && blueNodes[i + 1] == tgt.id) {
+                                                                                                found = true;
+                                                                                                highlightedEdges.push({ src, tgt, color: "#00f" });
+                                                                                        }
+                                                                                }
+                                                                                if (!found) {
+                                                                                        normalEdges.push({ src, tgt });
+                                                                                }
+                                                                        }
+                                                                        else {
+                                                                                if (selectedNodeId !== null && src.id == selectedNodeId && dist == null) {
+                                                                                        highlightedEdges.push({ src, tgt, color: "#f00" });
+                                                                                } else {
+                                                                                        normalEdges.push({ src, tgt });
+                                                                                }
+                                                                        }
+                                                                });
+                                                                ctx.strokeStyle = "#ccc";
+                                                                normalEdges.forEach(({ src, tgt }) => {
+                                                                                ctx.beginPath();
+                                                                                ctx.moveTo(src.x, src.y);
+                                                                                ctx.lineTo(tgt.x, tgt.y);
+                                                                                ctx.stroke();
+                                                                        });
+                                                                highlightedEdges.forEach(({ src, tgt, color }) => {
+                                                                                ctx.strokeStyle = color;
+                                                                                ctx.beginPath();
+                                                                                ctx.moveTo(src.x, src.y);
+                                                                                ctx.lineTo(tgt.x, tgt.y);
+                                                                                ctx.stroke();
+                                                                        });
+                                                                graph.nodes.forEach(node => {
+                                                                                ctx.beginPath();
+                                                                                ctx.arc(node.x, node.y, nodeRadius, 0, 2 * Math.PI);
+                                                                                if (!dist) {
+                                                                                        if (canvasId == "put-on-top-coupling") {
+                                                                                                if (node.id == greenNodeId) {
+                                                                                                                ctx.fillStyle = "green";
+                                                                                                }
+                                                                                                else if (redNodes.includes(node.id)) {
+                                                                                                                ctx.fillStyle = "red";
+                                                                                                } else if (blueNodes.includes(node.id)) {
+                                                                                                                ctx.fillStyle = "blue";
+                                                                                                } else {
+                                                                                                                ctx.fillStyle = "grey";
+                                                                                                }
+                                                                                        } else {
+                                                                                                ctx.fillStyle = "steelblue";
+                                                                                        }
+                                                                                } else {
+                                                                                        const maxVal = Math.max(...dist);
+                                                                                        if (canvasId === "put-on-top-heatmap") {
+                                                                                                ctx.fillStyle = `rgba(255, 0, 0, ${dist[node.id] / maxVal})`;
+                                                                                        } else {
+                                                                                                ctx.fillStyle = `rgba(0, 0, 255, ${dist[node.id] / maxVal})`;
+                                                                                        }
+                                                                                }
+                                                                                ctx.fill();
+                                                                        });
+                                                        }
+
+                                                canvas.addEventListener("mousemove", evt => {
+                                                                const rect = canvas.getBoundingClientRect();
+                                                                const mx = evt.clientX - rect.left;
+                                                                const my = evt.clientY - rect.top;
+                                                                let found = null;
+                                                                for (const node of graph.nodes) {
+                                                                                const dx = node.x - mx;
+                                                                                const dy = node.y - my;
+                                                                                if (dx * dx + dy * dy < 9) {
+                                                                                                found = node;
+                                                                                                break;
+                                                                                        }
+                                                                        }
+                                                                if (found) {
+                                                                        tooltip.style.left = evt.pageX + 10 + "px";
+                                                                        tooltip.style.top = evt.pageY - 20 + "px";
+                                                                        tooltip.innerText = `${found.label}`;
+                                                                        tooltip.style.display = "block";
+                                                                } else {
+                                                                        tooltip.style.display = "none";
+                                                                }
+                                                        });
+                                                canvas.addEventListener("click", evt => {
+                                                                const rect = canvas.getBoundingClientRect();
+                                                                const mx = evt.clientX - rect.left;
+                                                                const my = evt.clientY - rect.top;
+                                                                selectedNodeId = null;
+                                                                for (const node of graph.nodes) {
+                                                                                const dx = node.x - mx;
+                                                                                const dy = node.y - my;
+                                                                                if (dx * dx + dy * dy < 9) {
+                                                                                        if (canvasId == "put-on-top-coupling") {
+                                                                                                if (redNodes.length == 0)    redNodes.push(node.id);
+                                                                                                else if (node.id != redNodes[0] && blueNodes.length == 0)    blueNodes.push(node.id);
+                                                                                        }
+                                                                                        else {
+                                                                                                selectedNodeId = node.id;
+                                                                                        }
+                                                                                        break;
+                                                                                }
+                                                                        }
+                                                                draw();
+                                                        });
+                                        }
+
+                                const putGraph = buildGraph(putOnTopNeighbors);
+                                const riffleGraph = buildGraph(riffleNeighbors);
+
+                                runForceLayout(putGraph, document.getElementById("put-on-top-canvas").getContext("2d"), "put-on-top-canvas");
+                                runForceLayout(riffleGraph, document.getElementById("inverse-riffle-canvas").getContext("2d"), "inverse-riffle-canvas");
+
+                                function buildTransitionMatrix(neighborFn) {
+                                                const matrix = Array.from({ length: n_fact }, () => Array(n_fact).fill(0));
+                                                permutations.forEach((perm, i) => {
+                                                                const neighbors = neighborFn(perm);
+                                                                const prob = 1 / neighbors.length;
+                                                                neighbors.forEach(nStr => {
+                                                                                const j = permStrToId.get(nStr);
+                                                                                matrix[i][j] += prob;
+                                                                        });
+                                                        });
+                                                return matrix;
+                                        }
+
+                                function matVecMultiply(matrix, vec) {
+                                                const result = new Array(vec.length).fill(0);
+                                                for (let i = 0; i < matrix.length; i++) {
+                                                                for (let j = 0; j < matrix[i].length; j++) {
+                                                                                result[j] += matrix[i][j] * vec[i];
+                                                                        }
+                                                        }
+                                                return result;
+                                        }
+
+                                function computeExactDistributions(transitionMatrix, startIdx, steps = 10) {
+                                                const distributions = [];
+                                                let current = Array(n_fact).fill(0);
+                                                current[startIdx] = 1;
+                                                for (let t = 0; t < steps; t++) {
+                                                                distributions.push(current);
+                                                                current = matVecMultiply(transitionMatrix, current);
+                                                        }
+                                                return distributions;
+                                        }
+
+                                function totalVariationDistance(p, q) {
+                                                let sum = 0;
+                                                for (let i = 0; i < p.length; i++) {
+                                                                sum += Math.abs(p[i] - q[i]);
+                                                        }
+                                                return 0.5 * sum;
+                                        }
+
+                                let oneVector = Array(n_fact).fill(0);
+                                oneVector[0] = 1;
+
+                                const uniform = Array(n_fact).fill(1 / n_fact);
+
+                                runForceLayout(putGraph, document.getElementById("put-on-top-heatmap").getContext("2d"), "put-on-top-heatmap", oneVector);
+                                runForceLayout(riffleGraph, document.getElementById("inverse-riffle-heatmap").getContext("2d"), "inverse-riffle-heatmap", oneVector);
+
+                                let tvData = [['Step', 'Put-On-Top', 'Inverse-Riffle', '1/2e']];
+                                let tvChart;
+                                let tvOptions = {
+                                                title: 'Delta(T) vs Time',
+                                                curveType: 'function',
+                                                legend: { position: 'bottom' },
+                                                hAxis: { title: 'Timestep' },
+                                                vAxis: { title: 'Delta(T)', minValue: 0, maxValue: 1 },
+                                                series: {
+                                                                0: { color: '#d62728' },
+                                                                1: { color: '#1f77b4' },
+                                                                2: { color: '#aaa', lineDashStyle: [4, 4] }
+                                                        }
+                                        };
+
+                                function drawTVChart(data) {
+                                                const chartData = google.visualization.arrayToDataTable(data);
+                                                if (!tvChart) tvChart = new google.visualization.LineChart(document.getElementById('tv-chart'));
+                                                tvChart.draw(chartData, tvOptions);
+                                        }
+
+                                document.getElementById("simulate-btn").addEventListener("click", () => {
+                                                document.getElementById("tv-chart").style.display = "block";
+                                                const steps = 12;
+                                                const startIdx = 0;
+
+                                                const M_put = buildTransitionMatrix(putOnTopNeighbors);
+                                                const M_riffle = buildTransitionMatrix(riffleNeighbors);
+
+                                                const dist_put = computeExactDistributions(M_put, startIdx, steps);
+                                                const dist_riffle = computeExactDistributions(M_riffle, startIdx, steps);
+
+                                                tvData = [['Step', 'Put on Top', 'Inverse Riffle', '1/2e']];
+                                                let t = 0;
+                                                const interval = setInterval(() => {
+                                                                if (t >= steps) return clearInterval(interval);
+                                                                runForceLayout(putGraph, document.getElementById("put-on-top-heatmap").getContext("2d"), "put-on-top-heatmap", dist_put[t]);
+                                                                runForceLayout(riffleGraph, document.getElementById("inverse-riffle-heatmap").getContext("2d"), "inverse-riffle-heatmap", dist_riffle[t]);
+                                                                const tvPut = totalVariationDistance(dist_put[t], uniform);
+                                                                const tvRiffle = totalVariationDistance(dist_riffle[t], uniform);
+                                                                tvData.push([t, tvPut, tvRiffle, 1/(2 * Math.E)]);
+                                                                drawTVChart(tvData);
+                                                                t++;
+                                                        }, 1000);
+                                        });
+
+                                runForceLayout(putGraph, document.getElementById("put-on-top-coupling").getContext("2d"), "put-on-top-coupling", null);
+                                document.getElementById("run-coupling-btn").addEventListener("click", () => {
+                                                if (blueNodes.length == 0) {
+                                                        alert("Please select a red and blue node first.");
+                                                        return;
+                                                }
+                                                if (redNodes.length > 1) {
+                                                        alert("Please reset the simulation before running again.");
+                                                }
+                                                let hit = false;
+                                                let t = 0;
+                                                const interval = setInterval(() => {
+                                                        if (hit) return clearInterval(interval);
+                                                        runForceLayout(putGraph, document.getElementById("put-on-top-coupling").getContext("2d"), "put-on-top-coupling", null);
+                                                        const latestNode = permutations[redNodes[redNodes.length - 1]];
+                                                        console.log(latestNode);
+                                                        const positionOfCardToTop = Math.floor(Math.random() * n);
+                                                        const valueOfCardToTop = latestNode[positionOfCardToTop];
+                                                        const nextNode = [valueOfCardToTop].concat(latestNode.filter((_, i) => i !== positionOfCardToTop));
+                                                        redNodes.push(permStrToId.get(nextNode.join("")));
+                                                        const latestNodeBlue = permutations[blueNodes[blueNodes.length - 1]];
+                                                        let nextNodeBlue = [valueOfCardToTop];
+                                                        for (let i = 0; i < latestNodeBlue.length; i++) {
+                                                                if (latestNodeBlue[i] != valueOfCardToTop) {
+                                                                        nextNodeBlue.push(latestNodeBlue[i]);
+                                                                }
+                                                        }
+                                                        blueNodes.push(permStrToId.get(nextNodeBlue.join("")));
+                                                        t++;
+                                                        if (redNodes[redNodes.length - 1] == blueNodes[blueNodes.length - 1]) {
+                                                                greenNodeId = redNodes[redNodes.length - 1];
+                                                                hit = true;
+                                                                document.getElementById('hitsAt').textContent = t;
+                                                        }
+                                                }, 1000);
+                                });
+                                document.getElementById("reset-coupling-btn").addEventListener("click", () => {
+                                        redNodes = [];
+                                        blueNodes = [];
+                                        greenNodeId = null;
+                                        runForceLayout(putGraph, document.getElementById("put-on-top-coupling").getContext("2d"), "put-on-top-coupling", null);
+                                });
+                        });
+</script>
