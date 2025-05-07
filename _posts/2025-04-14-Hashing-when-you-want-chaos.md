@@ -204,6 +204,8 @@ You can find this idea in other places also, say **Bitcoin mining**, where the m
 
 In part two, we will look at settings where hashing isn't just random chaos - but actually encodes some properties of the object being hashed. Most commonly used in Locality Sensitive Hashing, to solve problems like nearest neighbor, etc.
 
+<iframe src="https://strawpoll.com/embed/polls/mpnb1P0qJy5" width="800" height="420" frameborder="0"></iframe>
+
 [^1]: 1: Usage in Redis is referred [here](https://redis.io/docs/latest/develop/data-types/probabilistic/hyperloglogs/)
 
 [^2]: 2: Such a hash function might sound magical, but is not. [Murmurhash3](https://en.wikipedia.org/wiki/MurmurHash) which takes in a seed is considered a good enough uniform hash function for our purpose.
