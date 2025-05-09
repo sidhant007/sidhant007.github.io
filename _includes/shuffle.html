@@ -103,34 +103,34 @@
                                                                 let normalEdges = [];
                                                                 let highlightedEdges = [];
                                                                 graph.edges.forEach(link => {
-                                                                        const src = graph.nodes[link.source.index ?? link.source];
-                                                                        const tgt = graph.nodes[link.target.index ?? link.target];
-                                                                        if (canvasId == "put-on-top-coupling") {
-                                                                                found = false;
-                                                                                for (let i = 0; i < redNodes.length - 1; i++) {
-                                                                                        if (redNodes[i] == src.id && redNodes[i + 1] == tgt.id) {
-                                                                                                found = true;
-                                                                                                highlightedEdges.push({ src, tgt, color: "#f00" });
+                                                                                const src = graph.nodes[link.source.index ?? link.source];
+                                                                                const tgt = graph.nodes[link.target.index ?? link.target];
+                                                                                if (canvasId == "put-on-top-coupling") {
+                                                                                                found = false;
+                                                                                                for (let i = 0; i < redNodes.length - 1; i++) {
+                                                                                                                if (redNodes[i] == src.id && redNodes[i + 1] == tgt.id) {
+                                                                                                                                found = true;
+                                                                                                                                highlightedEdges.push({ src, tgt, color: "#f00" });
+                                                                                                                        }
+                                                                                                        }
+                                                                                                for (let i = 0; i < blueNodes.length - 1; i++) {
+                                                                                                                if (blueNodes[i] == src.id && blueNodes[i + 1] == tgt.id) {
+                                                                                                                                found = true;
+                                                                                                                                highlightedEdges.push({ src, tgt, color: "#00f" });
+                                                                                                                        }
+                                                                                                        }
+                                                                                                if (!found) {
+                                                                                                                normalEdges.push({ src, tgt });
+                                                                                                        }
                                                                                         }
-                                                                                }
-                                                                                for (let i = 0; i < blueNodes.length - 1; i++) {
-                                                                                        if (blueNodes[i] == src.id && blueNodes[i + 1] == tgt.id) {
-                                                                                                found = true;
-                                                                                                highlightedEdges.push({ src, tgt, color: "#00f" });
+                                                                                else {
+                                                                                                if (selectedNodeId !== null && src.id == selectedNodeId && dist == null) {
+                                                                                                                highlightedEdges.push({ src, tgt, color: "#f00" });
+                                                                                                        } else {
+                                                                                                                        normalEdges.push({ src, tgt });
+                                                                                                                }
                                                                                         }
-                                                                                }
-                                                                                if (!found) {
-                                                                                        normalEdges.push({ src, tgt });
-                                                                                }
-                                                                        }
-                                                                        else {
-                                                                                if (selectedNodeId !== null && src.id == selectedNodeId && dist == null) {
-                                                                                        highlightedEdges.push({ src, tgt, color: "#f00" });
-                                                                                } else {
-                                                                                        normalEdges.push({ src, tgt });
-                                                                                }
-                                                                        }
-                                                                });
+                                                                        });
                                                                 ctx.strokeStyle = "#ccc";
                                                                 normalEdges.forEach(({ src, tgt }) => {
                                                                                 ctx.beginPath();
@@ -149,28 +149,28 @@
                                                                                 ctx.beginPath();
                                                                                 ctx.arc(node.x, node.y, nodeRadius, 0, 2 * Math.PI);
                                                                                 if (!dist) {
-                                                                                        if (canvasId == "put-on-top-coupling") {
-                                                                                                if (node.id == greenNodeId) {
-                                                                                                                ctx.fillStyle = "green";
-                                                                                                }
-                                                                                                else if (redNodes.includes(node.id)) {
-                                                                                                                ctx.fillStyle = "red";
-                                                                                                } else if (blueNodes.includes(node.id)) {
-                                                                                                                ctx.fillStyle = "blue";
-                                                                                                } else {
-                                                                                                                ctx.fillStyle = "grey";
-                                                                                                }
+                                                                                                if (canvasId == "put-on-top-coupling") {
+                                                                                                                if (node.id == greenNodeId) {
+                                                                                                                                ctx.fillStyle = "green";
+                                                                                                                        }
+                                                                                                                else if (redNodes.includes(node.id)) {
+                                                                                                                                ctx.fillStyle = "red";
+                                                                                                                        } else if (blueNodes.includes(node.id)) {
+                                                                                                                                        ctx.fillStyle = "blue";
+                                                                                                                                } else {
+                                                                                                                                                ctx.fillStyle = "grey";
+                                                                                                                                        }
+                                                                                                        } else {
+                                                                                                                        ctx.fillStyle = "steelblue";
+                                                                                                                }
                                                                                         } else {
-                                                                                                ctx.fillStyle = "steelblue";
-                                                                                        }
-                                                                                } else {
-                                                                                        const maxVal = Math.max(...dist);
-                                                                                        if (canvasId === "put-on-top-heatmap") {
-                                                                                                ctx.fillStyle = `rgba(255, 0, 0, ${dist[node.id] / maxVal})`;
-                                                                                        } else {
-                                                                                                ctx.fillStyle = `rgba(0, 0, 255, ${dist[node.id] / maxVal})`;
-                                                                                        }
-                                                                                }
+                                                                                                        const maxVal = Math.max(...dist);
+                                                                                                        if (canvasId === "put-on-top-heatmap") {
+                                                                                                                        ctx.fillStyle = `rgba(255, 0, 0, ${dist[node.id] / maxVal})`;
+                                                                                                                } else {
+                                                                                                                                ctx.fillStyle = `rgba(0, 0, 255, ${dist[node.id] / maxVal})`;
+                                                                                                                        }
+                                                                                                }
                                                                                 ctx.fill();
                                                                         });
                                                         }
@@ -189,13 +189,13 @@
                                                                                         }
                                                                         }
                                                                 if (found) {
-                                                                        tooltip.style.left = evt.pageX + 10 + "px";
-                                                                        tooltip.style.top = evt.pageY - 20 + "px";
-                                                                        tooltip.innerText = `${found.label}`;
-                                                                        tooltip.style.display = "block";
-                                                                } else {
-                                                                        tooltip.style.display = "none";
-                                                                }
+                                                                                tooltip.style.left = evt.pageX + 10 + "px";
+                                                                                tooltip.style.top = evt.pageY - 20 + "px";
+                                                                                tooltip.innerText = `${found.label}`;
+                                                                                tooltip.style.display = "block";
+                                                                        } else {
+                                                                                        tooltip.style.display = "none";
+                                                                                }
                                                         });
                                                 canvas.addEventListener("click", evt => {
                                                                 const rect = canvas.getBoundingClientRect();
@@ -206,15 +206,15 @@
                                                                                 const dx = node.x - mx;
                                                                                 const dy = node.y - my;
                                                                                 if (dx * dx + dy * dy < 9) {
-                                                                                        if (canvasId == "put-on-top-coupling") {
-                                                                                                if (redNodes.length == 0)    redNodes.push(node.id);
-                                                                                                else if (node.id != redNodes[0] && blueNodes.length == 0)    blueNodes.push(node.id);
+                                                                                                if (canvasId == "put-on-top-coupling") {
+                                                                                                                if (redNodes.length == 0)    redNodes.push(node.id);
+                                                                                                                else if (node.id != redNodes[0] && blueNodes.length == 0)    blueNodes.push(node.id);
+                                                                                                        }
+                                                                                                else {
+                                                                                                                selectedNodeId = node.id;
+                                                                                                        }
+                                                                                                break;
                                                                                         }
-                                                                                        else {
-                                                                                                selectedNodeId = node.id;
-                                                                                        }
-                                                                                        break;
-                                                                                }
                                                                         }
                                                                 draw();
                                                         });
@@ -279,11 +279,11 @@
                                 let tvData = [['Step', 'Put-On-Top', 'Inverse-Riffle', '1/2e']];
                                 let tvChart;
                                 let tvOptions = {
-                                                title: 'Delta(T) vs Time',
+                                                title: 'Δ(t) = ‖π - Pₛᵀ‖ vs T',
                                                 curveType: 'function',
-                                                legend: { position: 'bottom' },
-                                                hAxis: { title: 'Timestep' },
-                                                vAxis: { title: 'Delta(T)', minValue: 0, maxValue: 1 },
+                                                legend: { position: 'bottom'},
+                                                hAxis: { title: 'T' },
+                                                vAxis: { title: 'Δ(T) = ‖π - Pₛᵀ‖', minValue: 0, maxValue: 1 },
                                                 series: {
                                                                 0: { color: '#d62728' },
                                                                 1: { color: '#1f77b4' },
@@ -325,44 +325,240 @@
                                 runForceLayout(putGraph, document.getElementById("put-on-top-coupling").getContext("2d"), "put-on-top-coupling", null);
                                 document.getElementById("run-coupling-btn").addEventListener("click", () => {
                                                 if (blueNodes.length == 0) {
-                                                        alert("Please select a red and blue node first.");
-                                                        return;
-                                                }
+                                                                alert("Please select a red and blue node first.");
+                                                                return;
+                                                        }
                                                 if (redNodes.length > 1) {
-                                                        alert("Please reset the simulation before running again.");
-                                                }
+                                                                alert("Please reset the simulation before running again.");
+                                                        }
                                                 let hit = false;
                                                 let t = 0;
                                                 const interval = setInterval(() => {
-                                                        if (hit) return clearInterval(interval);
-                                                        runForceLayout(putGraph, document.getElementById("put-on-top-coupling").getContext("2d"), "put-on-top-coupling", null);
-                                                        const latestNode = permutations[redNodes[redNodes.length - 1]];
-                                                        console.log(latestNode);
-                                                        const positionOfCardToTop = Math.floor(Math.random() * n);
-                                                        const valueOfCardToTop = latestNode[positionOfCardToTop];
-                                                        const nextNode = [valueOfCardToTop].concat(latestNode.filter((_, i) => i !== positionOfCardToTop));
-                                                        redNodes.push(permStrToId.get(nextNode.join("")));
-                                                        const latestNodeBlue = permutations[blueNodes[blueNodes.length - 1]];
-                                                        let nextNodeBlue = [valueOfCardToTop];
-                                                        for (let i = 0; i < latestNodeBlue.length; i++) {
-                                                                if (latestNodeBlue[i] != valueOfCardToTop) {
-                                                                        nextNodeBlue.push(latestNodeBlue[i]);
-                                                                }
-                                                        }
-                                                        blueNodes.push(permStrToId.get(nextNodeBlue.join("")));
-                                                        t++;
-                                                        if (redNodes[redNodes.length - 1] == blueNodes[blueNodes.length - 1]) {
-                                                                greenNodeId = redNodes[redNodes.length - 1];
-                                                                hit = true;
-                                                                document.getElementById('hitsAt').textContent = t;
-                                                        }
-                                                }, 1000);
-                                });
+                                                                if (hit) return clearInterval(interval);
+                                                                runForceLayout(putGraph, document.getElementById("put-on-top-coupling").getContext("2d"), "put-on-top-coupling", null);
+                                                                const latestNode = permutations[redNodes[redNodes.length - 1]];
+                                                                console.log(latestNode);
+                                                                const positionOfCardToTop = Math.floor(Math.random() * n);
+                                                                const valueOfCardToTop = latestNode[positionOfCardToTop];
+                                                                const nextNode = [valueOfCardToTop].concat(latestNode.filter((_, i) => i !== positionOfCardToTop));
+                                                                redNodes.push(permStrToId.get(nextNode.join("")));
+                                                                const latestNodeBlue = permutations[blueNodes[blueNodes.length - 1]];
+                                                                let nextNodeBlue = [valueOfCardToTop];
+                                                                for (let i = 0; i < latestNodeBlue.length; i++) {
+                                                                                if (latestNodeBlue[i] != valueOfCardToTop) {
+                                                                                                nextNodeBlue.push(latestNodeBlue[i]);
+                                                                                        }
+                                                                        }
+                                                                blueNodes.push(permStrToId.get(nextNodeBlue.join("")));
+                                                                t++;
+                                                                if (redNodes[redNodes.length - 1] == blueNodes[blueNodes.length - 1]) {
+                                                                                greenNodeId = redNodes[redNodes.length - 1];
+                                                                                hit = true;
+                                                                                document.getElementById('hitsAt').textContent = t;
+                                                                        }
+                                                        }, 1000);
+                                        });
                                 document.getElementById("reset-coupling-btn").addEventListener("click", () => {
-                                        redNodes = [];
-                                        blueNodes = [];
-                                        greenNodeId = null;
-                                        runForceLayout(putGraph, document.getElementById("put-on-top-coupling").getContext("2d"), "put-on-top-coupling", null);
-                                });
+                                                redNodes = [];
+                                                blueNodes = [];
+                                                greenNodeId = null;
+                                                runForceLayout(putGraph, document.getElementById("put-on-top-coupling").getContext("2d"), "put-on-top-coupling", null);
+                                        });
+                                let bit_for = [];
+                                function buildInverseRiffleTree(cards) {
+                                                function recurse(cards, level) {
+                                                                if (cards.length <= 1) {
+                                                                        return {
+                                                                                name: cards.join(""),
+                                                                                cards: cards,
+                                                                                children: [],
+                                                                                total_depth: 1,
+                                                                        };
+                                                                }
+                                                                const left = [];
+                                                                const right = [];
+                                                                if (bit_for.length <= level) {
+                                                                        let tmp = [];
+                                                                        for (let i = 0; i < n; i++) {
+                                                                                tmp.push(Math.random() < 0.5 ? "L" : "R");
+                                                                        }
+                                                                        bit_for.push(tmp);
+                                                                }
+                                                                for (let i = 0; i < cards.length; i++) {
+                                                                                if (bit_for[level][cards[i] - 1] === "L")    left.push(cards[i]);
+                                                                                else                                         right.push(cards[i]);
+                                                                        }
+                                                                let children_0 = recurse(left, level + 1);
+                                                                let children_1 = recurse(right, level + 1);
+                                                                let total_depth = Math.max(children_0.total_depth, children_1.total_depth) + 1;
+                                                                return {
+                                                                                name: cards.join(""),
+                                                                                cards: cards,
+                                                                                children: [
+                                                                                        children_0,
+                                                                                        children_1
+                                                                                ],
+                                                                                total_depth: total_depth,
+                                                                };
+                                                        }
+                                                return recurse(cards.split(""), 0);
+                                        }
+
+                                function is_valid_perm(perm) {
+                                                const target = "12345";
+                                                return perm.length === target.length && [...perm].sort().join('') === [...target].sort().join('');
+                                        }
+
+                                function renderTree(treeData, groupSelector, offsetX) {
+                                                const svg = d3.select("#tree-svg");
+                                                svg.select(groupSelector).selectAll("*").remove();
+
+                                                const width = +svg.attr("width");
+                                                const height = +svg.attr("height");
+
+                                                const g = svg.select(groupSelector).attr("transform", `translate(${offsetX}, 40)`);
+
+                                                const root = d3.hierarchy(treeData, d => d.children);
+
+                                                const treeLayout = d3.tree().nodeSize([50, 50]);
+                                                treeLayout(root);
+
+                                                const allX = root.descendants().map(d => d.x);
+                                                const minX = Math.min(...allX);
+                                                const maxX = Math.max(...allX);
+
+                                                g.attr("transform", `translate(${offsetX - minX}, 40)`);
+
+                                                const linkGroup = g.append("g").attr("class", "links");
+
+                                                linkGroup.selectAll("path")
+                                                        .data(root.links())
+                                                        .join("path")
+                                                        .attr("fill", "none")
+                                                        .attr("stroke", "#aaa")
+                                                        .attr("stroke-width", 2)
+                                                        .attr("d", d3.linkVertical()
+                                                                        .x(d => d.x)
+                                                                        .y(d => d.y)
+                                                                );
+
+                                                linkGroup.selectAll("text")
+                                                        .data(root.links())
+                                                        .join("text")
+                                                        .attr("x", d => (d.source.x + d.target.x) / 2)
+                                                        .attr("y", d => (d.source.y + d.target.y) / 2 - 5)
+                                                        .attr("text-anchor", "middle")
+                                                        .attr("font-size", "10px")
+                                                        .text(d => {
+                                                                        if (!d.source.children) return "";
+                                                                        return d.target === d.source.children[0] ? "L" : "R";
+                                                                });
+
+                                                const node = g.selectAll(".node")
+                                                        .data(root.descendants())
+                                                        .join("g")
+                                                        .attr("class", "node")
+                                                        .attr("transform", d => `translate(${d.x},${d.y})`);
+
+                                                node.append("circle")
+                                                        .attr("r", 13)
+                                                        .attr("fill", d => d.children && d.children.length > 0 ? "white" : "lightgreen")
+                                                        .attr("stroke", "black");
+
+                                                node.append("text")
+                                                        .attr("dy", 5)
+                                                        .attr("text-anchor", "middle")
+                                                        .attr("font-size", "7px")
+                                                        .attr("font-weight", "bold")
+                                                        .text(d => d.data.cards?.join("") || "");
+                                                return { minX, maxX };
+                                        }
+
+                                function pruneTreeToDepth(node, depthLeft) {
+                                                if (!node || depthLeft === 0 || !node.children || node.children.length === 0) {
+                                                        return { cards: node.cards, children: [] };
+                                                }
+
+                                                return {
+                                                        cards: node.cards,
+                                                        children: node.children.map(child => pruneTreeToDepth(child, depthLeft - 1))
+                                                };
+                                        }
+                                
+                                let tree1 = null;
+                                let tree2 = null;
+                                let currentDepth = null;
+
+                                document.getElementById("run-ir-btn").addEventListener("click", () => {
+                                                const start1 = String(document.getElementById("start1").value);
+                                                const start2 = String(document.getElementById("start2").value);
+                                                if (!is_valid_perm(start1) || !is_valid_perm(start2)) {
+                                                                alert("Invalid permutation. Please enter a valid permutation.");
+                                                                return;
+                                                        }
+                                                bit_for = [];
+                                                currentDepth = 0;
+                                                tree1 = buildInverseRiffleTree(start1);
+                                                tree2 = buildInverseRiffleTree(start2);
+                                                console.log(tree1);
+                                                let prunedTree1 = pruneTreeToDepth(tree1, currentDepth);
+                                                let prunedTree2 = pruneTreeToDepth(tree2, currentDepth);
+                                                document.getElementById("roundNum").textContent = currentDepth;
+                                                let order1 = dfsCollect(prunedTree1);
+                                                let order2 = dfsCollect(prunedTree2);
+                                                document.getElementById("deck1State").textContent = order1;
+                                                document.getElementById("deck2State").textContent = order2;
+                                                let labels1 = "";
+                                                let labels2 = "";
+                                                for (let i = 0; i < order1.length; i++) {
+                                                        labels1 = labels1 + bit_for[currentDepth][String(order1[i]) - '1'];
+                                                        labels2 = labels2 + bit_for[currentDepth][String(order2[i]) - '1'];
+                                                }
+                                                document.getElementById("deck1Labels").textContent = labels1;
+                                                document.getElementById("deck2Labels").textContent = labels2;
+                                                const extent1 = renderTree(prunedTree1, "#tree1", 40);
+                                                const offset2 = 40 + (extent1.maxX - extent1.minX) + 80;
+                                                renderTree(prunedTree2, "#tree2", offset2);
+                                        });
+
+                                function dfsCollect(node) {
+                                        if (!node) return "";
+                                        if (node.children.length === 0) return node.cards.join("");
+                                        return dfsCollect(node.children[0]) + dfsCollect(node.children[1]);
+                                }
+
+                                document.getElementById("next-ir-btn").addEventListener("click", () => {
+                                                if (!tree1 || !tree2) {
+                                                        alert("Please run start first");
+                                                        return;
+                                                }
+                                                if (currentDepth >= tree1.total_depth) {
+                                                        return;
+                                                }
+                                                currentDepth++;
+                                                let prunedTree1 = pruneTreeToDepth(tree1, currentDepth);
+                                                let prunedTree2 = pruneTreeToDepth(tree2, currentDepth);
+                                                document.getElementById("roundNum").textContent = currentDepth;
+                                                let order1 = dfsCollect(prunedTree1);
+                                                let order2 = dfsCollect(prunedTree2);
+                                                document.getElementById("deck1State").textContent = order1;
+                                                document.getElementById("deck2State").textContent = order2;
+                                                let labels1 = "";
+                                                let labels2 = "";
+                                                if (currentDepth < tree1.total_depth - 1) {
+                                                        for (let i = 0; i < order1.length; i++) {
+                                                                labels1 = labels1 + bit_for[currentDepth][String(order1[i]) - '1'];
+                                                                labels2 = labels2 + bit_for[currentDepth][String(order2[i]) - '1'];
+                                                        }
+                                                } else {
+                                                        labels1 = "XXXXX";
+                                                        labels2 = "XXXXX";
+                                                }
+                                                document.getElementById("deck1Labels").textContent = labels1;
+                                                document.getElementById("deck2Labels").textContent = labels2;
+                                                const extent1 = renderTree(prunedTree1, "#tree1", 40);
+                                                const offset2 = 40 + (extent1.maxX - extent1.minX) + 80;
+                                                renderTree(prunedTree2, "#tree2", offset2);
+                                        });
                         });
 </script>
