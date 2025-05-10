@@ -152,7 +152,7 @@ Let's first clarify a question that might have popped in your head. We know how 
 $$||\pi - P_s \cdot M^t ||_{TV}$$ 
 as a function of $t$, and then figure out for which $t$ this value drops below $1/(2e)$?
 
-Well, although $M$ has some structure (example: each node has a specific number of outgoing edges and same number of incoming edges, etc...), still the matrix doesn't have enough structure to get a closed-form solution for the above expression. So we need some other way.
+For $n = 5$, the transition matrix $M$ is $5! \times 5!$, which is manegable. But for $n = 52$, the transition matrix would be [huge](https://www.reddit.com/r/theydidthemath/comments/6cuvdq/self_just_how_big_is_52_ie_the_number_of/), so any computational / closed-form solution polynomial in $O(n!)$ is not feasible. So we need some other way.
 
 ## The idea behind coupling
 
@@ -180,7 +180,7 @@ The second inequality is non-trivial and helps upper-bound the $\|\|\dots\|\|_{T
 Combining these two inequalities, we get:
 $$\Delta(t) = \dots \leq \dots \leq \max_{s, s'}\Pr[X_t \neq Y_t | X_0 = s, Y_0 = s']$$
 
-So if we can design a coupling, where $X_t = Y_t$ happens quickly[^5] (for all possible starting states $s$ and $s'$), then we can bound $\Delta(t)$ tightly and subsequently get a small enough $t$ where $\Delta(t) \leq 1/(2e)$ resulting in a small mixing time.
+So if we can design a coupling, where $X_t = Y_t$ happens quickly[^5] (for all possible starting states $s$ and $s'$), then we can bound $\Delta(t)$ tightly. This provides a small enough $t$ where $\Delta(t) \leq 1/(2e)$ resulting in a tight upper bound on the mixing time.
 
 ## What if our coupling has no shared randomness?
 
@@ -233,43 +233,15 @@ The coupling in Inverse-Riffle Shuffle is a bit more complicated, but the high-l
 
 For instance: If during the first shuffle, If in the first deck, we pick $L$ for 3 of Hearts, then we would pick $L$ for 3 of Hearts in the first shuffle of the second deck too.
 
-At first glance, it's not obvious if this would align our decks together. But notice, if card A is assigned L and card B is assigned R in the first shuffle, then A will be above B in both decks and future shuffles, no matter their labels, will preserve this relative position. This mimics "merge-sort" where each shuffle further partitions the cards into smaller and smaller groups, and the relative order of cards across these groups is preserved.
+At first glance, it's not obvious if this would align our decks together. Let's define the binary string of each card as the concatenation of the labels it receives over all the shuffles. For instance, if 3 of Hearts gets "L" in the first shuffle and "R" in the second shuffle, then the binary string for this card would be "LR".
 
-For instance, after two shuffles, all the cards which got LL (i.e. L label in both the shuffles) would be the top-most group, followed by cards which got LR (i.e. L label in first shuffle, followed by R label in second shuffle), RL and RR.
+If we shuffle the cards $t$ times, then each card would have a binary string of lenght $t$. Given any two cards $A$ and $B$, the last shuffle where they got different labels would dictate their relative ordering in the final deck. For instance, if card $A$ gets "LRLL**L**RL" and card $B$ gets "LLRL**R**RL", then in the 3rd last shuffle, we see that card $A$ got "L" and card $B$ got "R", so card $A$ would be on top of card $B$ in the final deck. However, if two cards have the same binary stringth of length $t$, then their original ordering in the deck would be preserved (this is bad for us).
 
-_Hint: Think of L as 0 and R as 1, and every round we are concatenating a bit to the binary representation of each card. Once the binary string of each card is unique, we end-up with the same total ordering of the cards in both the decks, irrespective of how our initial decks were ordered._
-
-This below visualization should hopefully bring this out even more clearly.
-
-**Feed in two starting states like: "12345" and "54321", then click "Start", followed by "Next"'s to see how the two decks would converge**
-
-<label for="start1">Starting State 1 ($s$): </label>
-<input type="number" id="start1" value="12345">
-
-<label for="start2">Starting State 2 ($s'$): </label>
-<input type="number" id="start2" value="54321">
-
-Shuffle Number: **<span id="roundNum"></span>**
-
-States: Deck 1 - **<span id="deck1State"></span>**, Deck 2 - **<span id="deck2State"></span>**
-
-L/R   : Deck 1 - **<span id="deck1Labels" style="color: lightgreen;"></span>**, Deck 2 - **<span id="deck2Labels" style="color: grey;"></span>**
-
-<div style="display: flex; gap: 5px;">
-  <svg id="tree-svg" width="800" height="400" style="border: 1px solid black; background: white;">
-    <g id="tree1"></g>
-    <g id="tree2"></g>
-  </svg>
-</div>
-
-<button id="run-ir-btn">Start</button>
-<button id="next-ir-btn">Next</button>
-
-_Nodes in green denote the leaves, i.e. the current ordering of the cards._
+If our $t$ is large enough, then we can ensure that all the cards have unique binary strings, and thus we end up with the same total ordering of the cards in both the decks, irrespective of how our initial decks were ordered.
 
 Intuitively, it should seem that after $O(\log{n})$ many rounds, each card would end up with a unique binary string, since in each turn we are appending a random bit to the binary string of each card.
 
-This is indeed the case, we can show after $t$ rounds, the probability that any pair of cards still has the exact same binary string is: $\leq {n \choose 2} \times 2^{-t}$ 
+This is indeed the case, we can show after $t$ rounds, the probability that any pair of cards still has the exact same binary string is: $\leq {n \choose 2} \times 2^{-t}$ (Using Union Bound Inequality)
 
 We also know that both the decks look identical once all the cards have unique binary string, therefore:
 
@@ -280,7 +252,6 @@ By setting $t = 2\log{n} + 3$, we get $\Pr[X_t \neq Y_t] \leq 1/(2e)$ and hence,
 <div class="quiz-box">
 Here, we have shown that after running the Inverse-Riffle Shuffle, $\sim 2logn + 3$ times, the deck would be well shuffled.
 </div>
-
 
 ## Key Takeaways
 
@@ -317,7 +288,7 @@ In **Inverse-Riffle Shuffle** we generated a random bit to decide the label of e
 
 ## Further References
 
-- [Analsyis on riffle shuffle](https://math.dartmouth.edu/~pw/math100w13/haddadan.pdf)
+- [Analysis on riffle shuffle](https://math.dartmouth.edu/~pw/math100w13/haddadan.pdf)
 
 - [Interesting blog on coupling](https://web.stanford.edu/~linkewei/blog/coupling/)
 
