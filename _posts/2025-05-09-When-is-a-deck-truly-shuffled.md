@@ -71,7 +71,7 @@ _Note: This graph is analogous to the transition matrix we described above. The 
 
 <div id="tooltip" style="position:absolute; background:#eee; padding:4px 8px; border-radius:4px; border:1px solid #ccc; pointer-events:none; display:none;"></div>
 
-> Quick poll to check your understanding: In both the shuffles we don't see all the 5 and 32 edges respectively. This is because this diagram dropped the self-edges. For a given state in each of the two shuffles, how many self-edges are there?
+> Quick poll to check your understanding: In both the shuffles we don't see all the 5 and 32 edges respectively. This is because we don't show the self-edges, in this diagram to keep it visually simple. For a given state in each of the two shuffles, how many self-edges are actually there?
 
 <details>
   <summary>Spoiler</summary>
