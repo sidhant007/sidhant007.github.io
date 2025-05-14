@@ -147,8 +147,67 @@ document.addEventListener("DOMContentLoaded", function() {
 
   let redDots = [];
   let polygon = [];
+  let og_polygon = [];
+  let hashedDots = [];
 
   let polygonDone = false;
+  let hashingDone = false;
+
+  let isDragging = false;
+  let startDist = 0;
+  let center;
+
+  let scale = 0;
+
+  regionCanvas.addEventListener("mousedown", function(event) {
+    if (!hashingDone) return;
+    isDragging = true;
+    center = {x: 0, y: 0};
+    og_polygon = [];
+    buondScale = null;
+    for (let i = 0; i < polygon.length; i++) {
+      const x = polygon[i].x;
+      const y = polygon[i].y;
+      center.x += x;
+      center.y += y;
+      og_polygon.push({ x, y });
+    }
+    center.x /= polygon.length;
+    center.y /= polygon.length;
+    const mouse = getMousePos(event);
+    startDist = distance(mouse, center);
+  });
+
+  regionCanvas.addEventListener("mousemove", function(event) {
+    if (!hashingDone) return;
+    if (!isDragging) return;
+    const mouse = getMousePos(event);
+    const dist = distance(mouse, center);
+    scale = dist / startDist;
+    for (let i = 0; i < og_polygon.length; i++) {
+      const x = center.x + (og_polygon[i].x - center.x) * scale;
+      const y = center.y + (og_polygon[i].y - center.y) * scale;
+      polygon[i].x = x;
+      polygon[i].y = y;
+    }
+    onRunButtonClick();
+  });
+
+  regionCanvas.addEventListener("mouseup", function(event) {
+    isDragging = false;
+  });
+
+  function getMousePos(event) {
+    const rect = regionCanvas.getBoundingClientRect();
+    return {
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top
+    };
+  }
+
+  function distance(p1, p2) {
+    return Math.sqrt((p1.x - p2.x)**2 + (p1.y - p2.y)**2);
+  }
 
   redDotsCanvas.addEventListener("click", function(event) {
     const rect = redDotsCanvas.getBoundingClientRect();
@@ -204,6 +263,7 @@ document.addEventListener("DOMContentLoaded", function() {
     redDots = [];
     polygon = [];
     polygonDone = false;
+    hashingDone = false;
   });
 
   defaultButton.addEventListener("click", function() {
@@ -248,6 +308,20 @@ document.addEventListener("DOMContentLoaded", function() {
   });
 
   runButton.addEventListener("click", function() {
+    onRunButtonClick();
+  });
+
+  function onRunButtonClick() {
+    polygonDone = true;
+    if (!hashingDone) {
+      hashedDots = redDots.map(dot => {
+        x = Math.random() * redDotsCanvas.width;
+        y = Math.random() * redDotsCanvas.height;
+        return { x, y };
+      });
+      hashingDone = true;
+    }
+
     regionCtx.clearRect(0, 0, regionCanvas.width, regionCanvas.height);
     if (polygon.length < 3) {
       alert("Please create a polygon with at least 3 points.");
@@ -268,12 +342,6 @@ document.addEventListener("DOMContentLoaded", function() {
       regionCtx.lineWidth = 2;
       regionCtx.stroke();
     }
-
-    const hashedDots = redDots.map(dot => {
-      x = Math.random() * redDotsCanvas.width;
-      y = Math.random() * redDotsCanvas.height;
-      return { x, y };
-    });
 
     hashedDots.forEach(dot => {
         regionCtx.fillStyle = "green";
@@ -397,6 +465,6 @@ document.addEventListener("DOMContentLoaded", function() {
         document.getElementById('inference').textContent = `#Inputs points < ${guessInputPoints} (probably)`;
     }
     plotHitLikelihood(percentage_area);
-  });
+  };
 });
 </script>

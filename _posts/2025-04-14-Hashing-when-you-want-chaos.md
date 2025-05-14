@@ -152,6 +152,8 @@ Add some input points in the "input space" on the left side and draw a rare even
 <button id="default-button" style="margin-top: 8px;">Default Setup (20 points)</button>
 <button id="run-button" style="margin-top: 8px;">Hash & Test</button>
 
+_Once you click "Hash & Test", you can drag and resize the polygon to see how the rare event region changing affects the results._
+
 Percentage area of rare region (p): **<span id="area"></span><br>**
 Rare region is hit: **<span id="hit"></span><br>**
 Inference: **<span id="inference"></span><br>**
