@@ -9,6 +9,8 @@ We all shuffle cards, but when is a deck truly shuffled? Firstly, what does 'tru
 
 We'll explore mixing times, coupling (a technique for analysing markov chains), and why some shuffles are superior than others.
 
+_Disclaimer: The content presented is not original research, but rather an attempt to explain already known concepts in a more intutive manner. The goal is to make it more accessible through visualizations and concrete examples. Feedback is welcome!_
+
 ## Markov Chains 101
 
 Let's first dig into some terminology relating to markov chains:
@@ -274,7 +276,7 @@ $$||\pi - P_s^t||_{TV}$$
 
 - If you look at the problem only from the lens of linear algebra/probability, you might miss out on the **obvious** intuition of why Inverse-Riffle Shuffle should mix faster. Looking at the graph of the markov chain, we see how dense it is, having $2^n$ outgoing edges from each node, compared to the $n$ outgoing edges in the Put-On-Top Shuffle.
 
-- Once mixed, there is no point in doing more shuffles. [7 riffle-shuffles](https://math.hmc.edu/funfacts/seven-shuffles) for a standard deck is the golden number.
+- Once mixed, there is no point in doing more shuffles. It has been shown mathematically (along the lines of the proof technique we discussed) that [7 riffle-shuffles](https://math.hmc.edu/funfacts/seven-shuffles) for a standard deck are enough to ensure the deck is well shuffled.
 
 ## Follow-up Side-Quest
 
