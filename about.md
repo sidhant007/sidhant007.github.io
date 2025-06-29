@@ -4,9 +4,9 @@ title: About
 permalink: /about/
 ---
 
-Hey, I am Sidhant, currently a master's student at Stanford University.
+Hey, I am Sidhant, currently a quant at Tower Research.
 
-Prior to this I worked as a software engineer at Citadel Securities for ~2 years and before that did my undergraduate from National University of Singapore (NUS).
+Prior to this, I was: (i) a master’s in CS at Stanford, (ii) a SWE at Citadel Securities, and (iii) undergrad at NUS.
 
 I have a strong interest in: Algorithms, Probability and Statistics, High-performant Systems, Modern C++, Recreational Mathematics.
 
