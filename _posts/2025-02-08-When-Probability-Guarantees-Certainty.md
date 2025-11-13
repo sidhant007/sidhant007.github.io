@@ -1,6 +1,6 @@
 ---
 layout: post
-title: When Probability Gaurentees Certainty
+title: When Probability Gaurantees Certainty
 tags:
   - technical
 ---
