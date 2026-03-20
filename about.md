@@ -24,6 +24,7 @@ sidhbansal at gmail.com
 <script src="https://rubenwardy.com/lichess_widgets/lichess_widgets.js"></script>
 - Problems and Lectures by me for competitive programming can be found [here]({{ site.baseurl }}/cp-contributions)
 - I try :/ <script>lichess_widgets.profile("light", "sidhant007");</script>
+- [Counterexamples]({{ site.baseurl }}/counterexamples)
 - Places I have visited
 {% raw %}
 <iframe src="https://www.google.com/maps/d/embed?mid=1vWnIkQM_Ku3Aej07OJpP04OU3YJUW7Qe" width="960" height="480"></iframe>
