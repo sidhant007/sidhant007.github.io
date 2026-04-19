@@ -22,7 +22,7 @@ sidhbansal at gmail.com
 
 <link rel="stylesheet" href="https://rubenwardy.com/lichess_widgets/lichess_widgets.css" />
 <script src="https://rubenwardy.com/lichess_widgets/lichess_widgets.js"></script>
-- Problems and Lectures by me for competitive programming can be found [here]({{ site.baseurl }}/cp-contributions)
+- Problems and lectures by me for competitive programming can be found [here]({{ site.baseurl }}/cp-contributions)
 - I try :/ <script>lichess_widgets.profile("light", "sidhant007");</script>
 - [Counterexamples]({{ site.baseurl }}/counterexamples)
 - Places I have visited
