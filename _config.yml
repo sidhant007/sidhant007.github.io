@@ -17,6 +17,8 @@ postshare_enabled : false
 permalink   : /:year/:title/
 markdown    : kramdown
 highlighter : rouge
+kramdown:
+  syntax_highlighter: rouge
 
 source      : ./
 destination : ./_site

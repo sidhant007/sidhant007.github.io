@@ -1,0 +1,63 @@
+---
+layout: default
+---
+
+<script type="text/x-thebe-config">
+{
+  binderOptions: {
+    repo: "sidhant007/thebe-env",
+    ref: "main",
+  },
+  kernelOptions: {
+    name: "python3"
+  },
+  requestKernel: true,
+  mountStatusWidget: true,
+  mountActivateWidget: true
+}
+</script>
+
+<script src="https://unpkg.com/thebe@latest/lib/index.js"></script>
+
+<article class="page container">
+  <header class="page-header">
+    <h1 class="page-title">{{ page.title }}</h1>
+  </header>
+
+  <div class="thebe-activate"></div>
+  <div class="thebe-status"></div>
+
+  <div class="page-content">
+    {{ content }}
+  </div>
+</article>
+
+<script>
+  function showLiveCodeCells() {
+    document.querySelectorAll(".codecell-wrapper").forEach(function (wrapper) {
+      const staticBlock = wrapper.querySelector(".codecell-static");
+      const liveBlock = wrapper.querySelector(".codecell-live");
+      if (staticBlock) staticBlock.style.display = "none";
+      if (liveBlock) liveBlock.style.display = "";
+    });
+  }
+
+  window.addEventListener("load", function () {
+    const activateBtnObserver = new MutationObserver(function () {
+      const activateButton = document.querySelector(".thebe-launch-button, .thebe-activate-button, .thebe-activate button, button.thebe-launch-button");
+      if (activateButton && !activateButton.dataset.boundCodecellSwap) {
+        activateButton.dataset.boundCodecellSwap = "true";
+        activateButton.addEventListener("click", function () {
+          showLiveCodeCells();
+          setTimeout(function () {
+            if (window.thebelab) {
+              window.thebelab.bootstrap();
+            }
+          }, 50);
+        });
+      }
+    });
+
+    activateBtnObserver.observe(document.body, { childList: true, subtree: true });
+  });
+</script>

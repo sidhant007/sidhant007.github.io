@@ -2,7 +2,7 @@
 layout: post
 title: The Hard + Fun Filter
 tags:
-  - personal
+  - pop-phil
 ---
 
 _Disclaimer: Still a 26 year old, figuring out life. This is not some life-changing advice, just a thought that's helped me._
