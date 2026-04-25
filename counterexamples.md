@@ -10,7 +10,7 @@ This is a companion to [Dealing with randomness]({{ site.baseurl }}/2025/Dealing
 
 Most personal websites are highlight reels. This one mostly is too. This page is a small correction.
 
-It lists a few things that didn’t work out — **closed loops from ~6–8+ years ago** — to document that trajectories are noisy and outcomes are not monotonic.
+It lists a few things that didn’t work out **from ~6–8+ years ago**, to document that trajectories are noisy and outcomes are not monotonic.
 
 This is mainly for:
 - juniors who might be over-indexing on a single exam / competition / workplace / outcome
@@ -30,14 +30,9 @@ This is a retrospective slice, not a real-time log.
 
 - **2017 — JEE Mains (~50k rank)**
 
-  Didn’t prepare seriously.
-
   Outcome: went to NUS instead
 
-
 - **2019 — Jane Street Dev Internship (No Return Offer)**
-
-  Didn’t convert.
 
   Outcome: moved on DRW → Citadel → current role
 
