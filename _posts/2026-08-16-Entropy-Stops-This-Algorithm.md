@@ -7,13 +7,15 @@ tags:
 
 Here is a weird way to prove that an algorithm terminates quickly.
 
-Say the algorithm flips random coins and fixes things. Each fix might break something else, so it fixes that too and so on.
+Say an algorithm repeatedly uses fresh random bits to repair violated constraints. A repair might violate another constraint, which the algorithm then repairs using more fresh randomness, and so on.
+
+Think of the randomness as a tape of independent random bits (each equally like to be $0$ or $1$) that the algorithm consumes as it runs.
 
 Also assume there is no easy way to quantify progress, i.e. a potential-function kind of analysis doesn't work or is cumbersome.
 
-We will show that if the algorithm ran for too long, then its execution could be used to **compress random strings**. Here random strings come from the coin flips we did.
+We will show that if the algorithm ran for too long, its execution would give us a shorter description of the random bits it consumed. In other words, we could reconstruct the original random tape using fewer bits than the algorithm actually read.
 
-It is a well-known fact[^1] that most random strings cannot be compressed, so the algorithm cannot run for too long.
+It is a well-known fact that most random strings cannot be losslessly described using substantially fewer bits. So if a long execution gives us such a shorter description, long executions must be rare.
 
 In this blog post, we'll explore this super unorthodox way of analysing an algorithm.
 
@@ -49,7 +51,7 @@ Let's propose an algorithm that solves this:
 
 - Start with some arbitrary assignment of $x_1, x_2, \ldots, x_7$ 
 
-- Whenever a clause $C$ is violated, resample all its variables. If this leaves an overlapping clause violated, recursively fix that one.
+- Whenever a clause $C$ is violated, resample all its variables: independently assign each variable in $C$ a fresh uniformly random value (True or False). If this leaves an overlapping clause violated, recursively fix that one.
 
 - Once all 3 clauses are satisfied, return the current assignment of $x_1, x_2, \ldots, x_7$
 
@@ -66,7 +68,7 @@ So a repair can trigger another repair, which can trigger another.
 
 Why doesn't this recursion continue forever?
 
-## Three repairs
+## Example dry run of three repairs
 
 Start with
 
@@ -108,17 +110,23 @@ Now throw them away.
 
 ## Proposing the compression algorithm
 
-Suppose I only give you the **final assignment and the repair history $C_1\rightarrow C_2\rightarrow C_3$**
+Suppose I give you only:
+1. the final assignment, $1001010$, and
+2. enough information to reconstruct the repair history, here $C_1\rightarrow C_2\rightarrow C_3$
 
-Can we recover the randomness?
+Can we recover all nine random bits?
 
-Start at
+Start from the final assignment:
 
 [
 1001010.
 ]
 
-The last repair was $C_3$. Its variables $(x_4,x_6,x_7)$ are $110$, so those were the last three random bits.
+The last repair was $C_3$. Its variables $(x_4,x_6,x_7)$ are $110$. Those values are exactly the three random bits sampled when $C_3$ was last repaired.
+
+So we have recovered the final three random bits: $110$
+
+To rewind further, we will need to identify what the variables looked like before this repair. 
 
 Before the repair, $C_3$ was violated. The **only** assignment that violates
 
@@ -156,19 +164,25 @@ So from the final assignment and repair history we recovered
 
 The randomness wasn't lost. **It got encoded in the execution.**
 
+More generally, the final assignment and repair history are enough to rewind the entire execution and recover the random bits used by the algorithm.
+
 ## The size of the history matters
 
 Reversibility alone isn't enough. If we use $1000$ random bits and need $2000$ bits to describe the execution, congrats, we have invented decompression.
 
-So the history must be cheap. **Suppose every clause overlaps with $\leq 2^{k-3}$ clauses**[^2]
+So the repair history must be cheap to encode. 
 
-Once we know the current clause, identifying an overlapping clause, now costs at most $\log_2(2^{k-3})=k-3$ bits.
+Build a graph whose vertices are the clauses, with an edge between clauses whenever they share a variable. **Suppose every clause overlaps with $\leq 2^{k-3}$ clauses**[^1]
 
-Remember that `Fix` is recursive, so its execution forms a tree. We also need to say whether we descend to a child repair, move to another sibling, or return to the parent. Three possibilities fit in $2$ bookkeeping bits.
+Suppose we are repairing clause $C$, and it triggers a repair of some overlapping clause $C'$. Since $C$ has at most $2^{k - 3}$ neighbours, we can number them: $0, 1, \dots, 2^{k - 3} - 1$. 
 
-So a repair costs at most $(k-3)+2=k-1$ bits of history.
+We don't need to store the full id of $C'$ among all clauses in the $k$-SAT. Once the decoder knows $C$, it only needs to know which numbered neighbour of $C$ came next. This local index takes at most $\log_2(2^{k - 3}) = k - 3$ bits.
 
-But the repair consumes $k$ fresh random bits.
+Remember that `Fix` is recursive, so its execution forms a tree. Think of walking this tree depth-first, we also need to record how the traversal moves: descending into a child repair, moving to a sibling, or returning to the parent. These three possibilities fit in $2$ bookkeeping bits.
+
+So each repair costs $(k-3)+2=k-1$ bits of history.
+
+But repairing a $k$-variable clause consumes exactly $k$ fresh random bits.
 
 That's our gap:
 
@@ -182,23 +196,27 @@ k\text{ random bits}
 
 After $T$ repairs we've consumed $kT$ random bits.
 
-Representing the history costs $(k - 1)T$ bits and the final assignment costs $n$ bits. 
+And we know from the previous sections, those bits can be reconstructed from:
+- the repair history, costing $(k - 1)T$ bits, and
+- the final assignment, costing $n$ bits (where $n$ is the \#variables in $k$-SAT)
 
-So another way to look at execution of `FIX` is as a compression scheme: it encodes $kT$ random bits using only $(k-1)T+n$ bits.
+So another way to look at execution of `FIX` is as a compression scheme: it encodes $kT$ random bits using $(k-1)T+n$ bits.
 
 Effectively, we save $kT-n-(k-1)T=T-n$ bits.
 
-Once $T > n$ we enter the interesting territory of compression. Say $T = n + c$, we now have compressed a random string by $c$ bits. Only an exponentially small fraction of random strings can do that[^1]
+If $T = n + c$, then a $kT$-bit random string has been described using only $kT - c$ bits.
+
+Now use the counting fact. There are $2^{kT}$ possible $kT$-bit strings, but only $2^{kT-c}$ descriptions of length $kT - c$, therefore at most a $2^{-c}$ fraction of all $kT$-bit strings can have a $c$-bit shorter lossless description.
+
+$$\Rightarrow \Pr[T \geq n + c] \leq 2^{-c}$$
 
 So long executions are exponentially unlikely. That's the proof.
 
-## Where did LLL enter?
+## Why sparse dependencies matter
 
-In the sparse dependencies.
+A repair can recurse only into one of relatively few overlapping clauses. That makes the execution tree cheap to describe.
 
-A repair can only recurse into one of relatively few overlapping clauses. That makes the execution tree cheap to describe.
-
-The full Lovász Local Lemma is more general than the $2^{k-3}$ bound above, but the intuition here is:
+This sparsity condition is exactly the kind of condition captured by the Lovász Local Lemma (LLL): roughly, bad events can be individually unlikely as long as they don't depend on too many other bad events. The full LLL is more general than the $2^{k - 3}$ bound above, but the intuition here is:
 
 [
 \text{sparse dependencies}
@@ -207,6 +225,8 @@ The full Lovász Local Lemma is more general than the $2^{k-3}$ bound above, but
 \Rightarrow
 \text{long execution compresses randomness}.
 ]
+
+Without the sparse-dependency assumption, the next repair could be any of the $m$ clauses, identifying it would cost roughly $\log_2{m}$ bits per repair. There would be no reason for $\log_2{m}$ to be smaller than the $k$ fresh random bits consumed by a repair. We would lose the gap between *randomness consumed* and *history needed to describe the execution*, and the proof would no longer work. 
 
 ## Can we be smarter?
 
@@ -218,10 +238,8 @@ That might indeed be a better algorithm, at least in some greedy intuitive sense
 
 A more targeted repair might use less randomness (say < $k - 1$ random bits), then this simple compression argument would no longer work.
 
-**From the proof's perspective being dumb is a feature, not a bug**
+**From the proof's perspective, being dumb is a feature, not a bug**
 
-[^1]: A simple counting argument: there are $2^m$ strings of length $m$, but only $2^{m-c}$ strings of length $m-c$. So only a $2^{-c}$ fraction of $m$-bit strings can have distinct $(m-c)$-bit encodings. There simply aren't enough short descriptions to go around.
-
-[^2]: In this example $k = 3$, and clearly $C_2$ overlaps with both $C_1$ and $C_3$ so the $\leq 2^{3-3} = 1$ constraint of overlapping is not met. Treat this example as merely a toy for small $k$ to visualize the proof technique. 
+[^1]: In this example $k = 3$, and clearly $C_2$ overlaps with both $C_1$ and $C_3$ so the $\leq 2^{3-3} = 1$ constraint of overlapping is not met. Treat this example as merely a toy for small $k$ to visualize the proof technique. 
 
 <iframe src="https://strawpoll.com/embed/polls/mpnb1wVrYy5" width="800" height="420" frameborder="0"></iframe>
